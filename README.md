@@ -1,4 +1,4 @@
-# SPICECiM-X
+# SPICECiM-X v3 Tutorial
 
 A SPICE-accurate simulation framework for Transformer inference on ReRAM-based
 Analog In-Memory Computing (AIMC) crossbars.
