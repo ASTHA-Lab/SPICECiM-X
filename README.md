@@ -557,4 +557,395 @@ this API:
   blocks and `psf/` raw outputs, plot per-subarray pos-neg current
   distributions, identify outliers.
 
-Good luck with the paper.
+
+
+# SPICECiM-X v3 — Run Guide
+
+How to run the v3 simulator against your existing ViT trainer project +
+saved checkpoint.  This is the practical companion to `TUTORIAL.md`.
+
+---
+
+## 1. Directory layout
+
+v3 keeps **two separate trees**: your trainer (unchanged) and the
+SPICECiM-X package.  They live side-by-side and never modify each other.
+
+```
+~/scratch/proj/
+├── NNA_SIMULATION_FRAMEWORK/        ← your trainer project (unchanged from v2)
+│   ├── config.ini                   ← extended with [HW] / [SIM] / [PATHS]
+│   ├── main.py
+│   ├── utils/
+│   │   ├── config.py
+│   │   ├── data.py
+│   │   ├── vit_reram.py
+│   │   ├── train.py
+│   │   ├── reram_imc_infer.py       ← v2, kept for A/B comparison
+│   │   ├── dc.py, dp.py             ← v2 helpers (no longer used by v3)
+│   │   └── utils.py
+│   ├── outputs/
+│   │   ├── best.pt                  ← trained checkpoint
+│   │   └── last.pt
+│   ├── Test_Image/
+│   │   └── t1/                      ← batch ID inferred from this folder name
+│   │       ├── img001.jpg
+│   │       └── ...
+│   ├── supports/                    ← SPICE / Verilog-A / netlists (see §3)
+│   │   ├── _golden_input.scs
+│   │   ├── _golden_input_dc.scs
+│   │   ├── standard_cell.netlist
+│   │   ├── reram_cell.v
+│   │   └── sky130_dc_memristor_dc.v
+│   └── SPICECIMX_V3/                ← v3 package, sits inside the trainer project
+│       ├── pyproject.toml
+│       ├── conftest.py
+│       ├── spicecimx/
+│       ├── tests/
+│       └── supports/                ← (optional duplicate; see §3)
+│
+└── PDK/                             ← your Cadence PDK (absolute path, unchanged)
+    └── GPDK/gpdk180_v3.3/models/spectre/gpdk.scs
+```
+
+**Generated at runtime** (created fresh per run, scoped by batch ID):
+```
+~/scratch/proj/NNA_SIMULATION_FRAMEWORK/
+├── hwsimdb/t1/                      ← SPICE outputs (.psf, .npy weight tiles)
+│   ├── h0_Q__block_00/
+│   │   └── Tile0/PE0/Array_0_0_pos/psf/
+│   ├── FFN_W1__block_00/
+│   └── ...
+├── tmp/t1/                          ← per-job working dirs
+│   ├── h0_Q__block_00/Array_0_0/pos/   ← isolated tmp for one Spectre run
+│   │   ├── seed_netlist.scs            ← symlink
+│   │   ├── input.scs                   ← rendered deck for this job
+│   │   └── psf/                        ← raw Spectre output
+│   ├── ...
+│   └── Final_report.txt             ← match/no-match summary
+└── imc_traces/t1/                   ← per-image CSV dumps (logits, softmax, intermediates)
+    ├── img001/
+    │   ├── logits_imc.csv
+    │   ├── logits_torch.csv
+    │   ├── softmax_imc.csv
+    │   ├── softmax_torch.csv
+    │   └── block_00/                ← per-block intermediates
+    └── img002/...
+```
+
+The batch ID (`t1` above) comes from the **leaf folder name of
+`--images_dir`** — same convention as v2.  Run two batches in parallel
+with `--images_dir Test_Image/t1` and `--images_dir Test_Image/t2` and
+they never collide.
+
+---
+
+## 2. Install once
+
+```bash
+module load cadence/2025
+conda activate spicecim
+
+cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/SPICECIMX_V3
+pip install -e .
+```
+
+After that, `python -m spicecimx.cli.infer` works from anywhere — though
+you'll usually run it from the trainer project root so relative paths in
+`config.ini` resolve correctly.
+
+---
+
+## 3. Where to place the support files
+
+v3 reads the support file paths from the **`[PATHS]`** section of
+`config.ini`.  Defaults are relative to the directory you run from
+(usually `NNA_SIMULATION_FRAMEWORK/`):
+
+```ini
+[PATHS]
+project_dir            = .
+images_dir             = ./Test_Image/t1
+dump_root              = imc_traces
+hwsimdb_root           = ./hwsimdb
+tmp_root               = ./tmp
+golden_input_transient = ./supports/_golden_input.scs
+golden_input_dc        = ./supports/_golden_input_dc.scs
+stdcell_netlist        = ./supports/standard_cell.netlist
+device_model_transient = ./supports/reram_cell.v
+device_model_dc        = ./supports/sky130_dc_memristor_dc.v
+transistor_model       = /home/s550a945/scratch/proj/PDK/GPDK/gpdk180_v3.3/models/spectre/gpdk.scs
+```
+
+**Recommended placement**: keep ONE copy of the support files in the
+trainer project's `supports/` directory (next to `config.ini`).  v2
+already expects them there, and v3's defaults match.  Don't keep a
+second copy inside `SPICECIMX_V3/supports/` — that one is only used by
+the test suite (it ships with a minimal `_golden_input_dc.scs` example
+to keep the tests self-contained).
+
+If your support files live elsewhere (e.g. on shared scratch), edit the
+`[PATHS]` section.  All paths can be absolute.
+
+| File                             | Purpose                                              | Used by mode      |
+|----------------------------------|------------------------------------------------------|-------------------|
+| `_golden_input.scs`              | Transient testbench template (PWL voltage sources)   | transient, hybrid |
+| `_golden_input_dc.scs`           | DC testbench template (param sweep over `img_idx`)   | dc, hybrid        |
+| `standard_cell.netlist`          | Decoder / TIA / peripheral standard cells            | all               |
+| `reram_cell.v`                   | Transient Verilog-A ReRAM model                      | transient, hybrid |
+| `sky130_dc_memristor_dc.v`       | DC Verilog-A ReRAM model                             | dc, hybrid        |
+| `<PDK>/gpdk.scs` (absolute)      | Transistor models from Cadence PDK                   | all               |
+
+---
+
+## 4. Update your `config.ini`
+
+Take your existing v2 `config.ini` and **add three sections** at the
+end.  Everything you have (`[DATA]`, `[MODEL]`, `[TRAIN]`, `[SAVE]`)
+keeps working unchanged.
+
+```ini
+# ── existing sections from your trainer ─────────────────────────────
+[DATA]
+dataset = fashion_mnist
+data_root = ./data
+img_height = 16
+img_width = 16
+channels = 1
+val_split = 0.1
+num_workers = 2
+augment = false
+
+[MODEL]
+patch_size = 4
+d_model = 32
+n_heads = 2
+d_k = 16
+d_v = 16
+depth = 2
+mlp_ratio = 2.0
+dropout = 0.1
+num_classes = 10
+use_class_token = true
+pos_embed = learnable
+
+[TRAIN]
+epochs = 30
+batch_size = 256
+lr = 3e-4
+weight_decay = 0.05
+betas = 0.9, 0.999
+warmup_epochs = 2
+lr_scheduler = cosine
+seed = 42
+amp = true
+device = auto
+log_interval = 50
+
+[SAVE]
+out_dir = outputs
+save_weights = true
+save_best = true
+
+# ── NEW sections for SPICECiM-X v3 ──────────────────────────────────
+[HW]
+# ReRAM device physics (Cu/HfO2 from your original setup)
+Tox  = 5.0e-9
+Tref = 4.7249e-9
+Ik1  = 6.14e-5
+Vref = 0.43
+Tmax = 4.9e-9
+Tmin = 3.3e-9
+# Crossbar tiling
+subarray_rows = 16
+subarray_cols = 16
+pe_rows = 2
+pe_cols = 2
+tile_rows = 2
+tile_cols = 2
+# Input voltage range for activation encoding
+vmin = 0.0
+vmax = 1.0
+
+[SIM]
+# transient | dc | hybrid — start with 'dc' for fastest sweeps
+mode = dc
+# Cap on concurrent Spectre invocations.  Set to # of available seats.
+license_count = 4
+pipeline_postprocess = true
+# Transient settling window (fraction of pulse — middle plateau)
+settling_window_lo = 0.40
+settling_window_hi = 0.65
+settling_reducer = median
+# Hybrid mode: fraction of subarrays cross-checked with transient (0 disables)
+hybrid_transient_fraction = 0.0
+hybrid_transient_seed = 0
+# ADC / TIA
+adc_bits = 16
+vmin_tia = 0.0
+vmax_tia = 1.0
+vmax_adc = 0.95
+enable_qerror = false
+
+[PATHS]
+project_dir            = .
+images_dir             = ./Test_Image/t1
+dump_root              = imc_traces
+hwsimdb_root           = ./hwsimdb
+tmp_root               = ./tmp
+golden_input_transient = ./supports/_golden_input.scs
+golden_input_dc        = ./supports/_golden_input_dc.scs
+stdcell_netlist        = ./supports/standard_cell.netlist
+device_model_transient = ./supports/reram_cell.v
+device_model_dc        = ./supports/sky130_dc_memristor_dc.v
+transistor_model       = /home/s550a945/scratch/proj/PDK/GPDK/gpdk180_v3.3/models/spectre/gpdk.scs
+```
+
+---
+
+## 5. Run it — three ways
+
+### Drop-in replacement for v2
+
+v2 command:
+```bash
+module load cadence/2025
+conda activate spicecim
+python utils/reram_imc_infer.py --batch_all
+```
+
+v3 equivalent:
+```bash
+module load cadence/2025
+conda activate spicecim
+python -m spicecimx.cli.infer --batch_all
+```
+
+Reads `./config.ini`, finds `outputs/best.pt`, processes
+`./Test_Image/t1/`, writes results to `./imc_traces/t1/`,
+`./hwsimdb/t1/`, `./tmp/t1/Final_report.txt`.
+
+### Try a different mode without editing config
+
+```bash
+# Fastest — DC operating point per matmul
+python -m spicecimx.cli.infer --batch_all --mode dc --licenses 4
+
+# Most accurate — full transient (v2-style but parallelised)
+python -m spicecimx.cli.infer --batch_all --mode transient --licenses 8
+
+# Diagnostic — DC primary + transient on 20% of subarrays for validation
+python -m spicecimx.cli.infer --batch_all --mode hybrid --licenses 4
+```
+
+### Sweep a different image batch in parallel
+
+```bash
+# Terminal 1
+python -m spicecimx.cli.infer --images_dir ./Test_Image/t1 --mode dc --licenses 4 &
+
+# Terminal 2 — different batch ID, isolated dirs, no collision
+python -m spicecimx.cli.infer --images_dir ./Test_Image/t2 --mode dc --licenses 4 &
+```
+
+---
+
+## 6. Common flags
+
+| Flag                       | Effect                                                     |
+|----------------------------|------------------------------------------------------------|
+| `--mode {transient,dc,hybrid}` | Override `sim.mode`                                  |
+| `--licenses N`             | Override `sim.license_count` (Spectre seats)               |
+| `--batch_all`              | Time-multiplex all images through each matmul (v2-style)   |
+| `--images_dir DIR`         | Override input dir (sets batch ID from leaf folder name)   |
+| `--checkpoint PATH`        | Force a specific `.pt` file                                |
+| `--limit N`                | Only process the first N images (good for smoke tests)     |
+| `--no_intermediates`       | Skip per-block CSV dumps (faster, less disk)               |
+| `--output_classes K`       | Trim final logits to first K columns                       |
+
+---
+
+## 7. Quick sanity check (no Spectre needed)
+
+Before launching a big run, verify the v3 pipeline is wired correctly:
+
+```bash
+cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/SPICECIMX_V3
+python -m spicecimx.cli.run --selftest --m 4 --k 8 --n 6
+```
+
+Should print `PASS` with rel error ~1e-16.  This skips Spectre and runs
+an analytic-ideal-current backend through the full `imc_matmul` kernel —
+it validates the affine de-mapping and config plumbing without needing
+a license.
+
+---
+
+## 8. Outputs you'll get
+
+For each image (`img001.jpg`):
+
+```
+imc_traces/t1/img001/
+├── logits_torch.csv      ← reference (pure PyTorch)
+├── logits_imc.csv        ← SPICE-accurate IMC result
+├── softmax_torch.csv
+├── softmax_imc.csv
+├── 01_patch_grid.csv     ← intermediate (only if --no_intermediates not set)
+├── 02_patch_tokens.csv
+├── ...
+└── block_00/
+    ├── h0_Q.csv          ← per-head Q matrix (numpy IMC output)
+    ├── h0_scores.csv     ← Q @ K.T / sqrt(d)
+    ├── h0_probs.csv      ← softmax
+    ├── h0_context.csv    ← attention output per head
+    ├── FFN_W1.npy        ← weight tile (saved by backend)
+    ├── after_ln1.csv
+    └── after_ln2.csv
+```
+
+Plus the run-level summary:
+```
+tmp/t1/Final_report.txt
+# img001.jpg | torch: 7 (p=0.962) | imc: 7 (p=0.951) | match=True
+# img002.jpg | torch: 3 (p=0.887) | imc: 9 (p=0.421) | match=False
+# ...
+```
+
+---
+
+## 9. Migrating from v2 — function-by-function
+
+If you have any v2 scripts (other than `reram_imc_infer.py`) that call
+into the simulator directly, here's the swap table:
+
+| v2                                                        | v3                                                                      |
+|-----------------------------------------------------------|-------------------------------------------------------------------------|
+| `from utils.utils import imc_matmul`                      | `from spicecimx.core.imc_matmul import imc_matmul`                      |
+| `from utils.utils import TIACalibrator`                   | `from spicecimx.analog.tia_adc import TIACalibrator, tia_adc_realistic` |
+| `from utils.dc import process_files_in_folder`            | `from spicecimx.io.parse_transient import process_files_in_folder`      |
+| `from utils.utils import generate_crossbar_netlist, ...`  | `from spicecimx.hw.netlist import generate_crossbar_netlist, ...`       |
+| `from utils.utils import conductance_calc, ...`           | `from spicecimx.hw.device_emit import conductance_calc, ...`            |
+
+Note that v3 `imc_matmul` requires `sim_backend`, `polarity_cache`, and
+`tia_apply` callables — see `cli/infer.py` for how to assemble them.
+
+---
+
+## 10. Where to look when something breaks
+
+| Symptom                                 | Where to look                                              |
+|-----------------------------------------|------------------------------------------------------------|
+| Import errors                           | `pyproject.toml` installed? `conftest.py` present?         |
+| "No checkpoint found"                   | Place `best.pt` under `<project>/outputs/` or pass `--checkpoint` |
+| "No images found"                       | `paths.images_dir` correct?  Try `--images_dir <abs path>` |
+| Spectre exit code != 0                  | Check `tmp/<batch>/<tag>/<Array>/<branch>/input.scs` + raw Spectre stderr in `psf/` |
+| All-zero currents                       | `transistor_model` path?  `process_corner` in `[SIM]`?     |
+| Huge `imc - torch` mismatch             | Try `--mode dc` to isolate physics from settling artifacts; check `polarity_cache` is shared across calls (CLI does this) |
+| Tests fail with "No module named spicecimx" | `pip install -e .` from the SPICECIMX_V3 dir            |
+
+
+
+cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/SPICECIMX_V3
+# pull in the four fixed files (templates.py, device_emit.py, and the two .scs templates)
+pip install -e . --force-reinstall --no-deps
