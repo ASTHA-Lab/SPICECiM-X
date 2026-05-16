@@ -950,7 +950,31 @@ cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/SPICECIMX_V3
 # pull in the four fixed files (templates.py, device_emit.py, and the two .scs templates)
 pip install -e . --force-reinstall --no-deps
 
-Fast DC mode
+## Fast DC mode
+
+Build the table (once per device)
+Either reuse your existing CSV directly via config:
+```
+[PATHS]
+char_table_path = supports/1T1R_dc_char.csv
+[SIM]
+fastdc_V_min  = 0.1     # match the CSV's implicit grid
+fastdc_V_max  = 1.0
+fastdc_V_step = 0.01
+```
+---
+
+Or build a fresh native .npz over the full grid:
+```
+python -m spicecimx.cli.characterize \
+    --config config.ini \
+    --veriloga /lustre/.../sky130_dc_memristor/veriloga/veriloga.va \
+    --output supports/cell_table.npz \
+    --V_min 0.0 --V_max 1.0 --V_step 0.01 \
+    --T_min 3.3e-9 --T_max 4.9e-9 --T_step 0.01e-9
+```
+---
+
 cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/VIT_TEST/SPICECIMX_V3
 # overwrite/add files as listed above
 pip install -e . --force-reinstall --no-deps --break-system-packages
