@@ -949,3 +949,8 @@ Note that v3 `imc_matmul` requires `sim_backend`, `polarity_cache`, and
 cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/SPICECIMX_V3
 # pull in the four fixed files (templates.py, device_emit.py, and the two .scs templates)
 pip install -e . --force-reinstall --no-deps
+
+Fast DC mode
+cd ~/scratch/proj/NNA_SIMULATION_FRAMEWORK/VIT_TEST/SPICECIMX_V3
+# overwrite/add files as listed above
+pip install -e . --force-reinstall --no-deps --break-system-packages
