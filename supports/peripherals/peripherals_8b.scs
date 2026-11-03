@@ -1,0 +1,59 @@
+// SPICECiM-X hardware (H) peripheral library: DAC_8b, TIA_8b, SUBTRACTOR_8b,
+// ADC_8b for [SUBCIRCUITS] role = <name>, H.  Point [PATHS] peripheral_netlist
+// at this file.  Behavioural, power-annotated Verilog-A cores (see the .va
+// headers); a transistor-level subckt with the same pins drops in unchanged.
+//
+// Sized for the 45 nm / VDD = 1.1 V example configs:
+//   * DAC full scale = [HW] vmax (0.6 V): vfs = 0.6 * 256/255 so code 255 -> 0.6 V
+//   * TIA: V_OUT = vcm - I_IN * rf  (rf = 500 ohm, vcm = 0.55 V)
+//   * SUBTRACTOR: V_OUT = vmid + gain * (V_INN - V_INP), so with the TIAs above
+//     V_OUT = 0.55 V + rf * (I_pos - I_neg): 0.15..0.95 V for |I_diff| <= 0.8 mA
+//     (= [PERIPHERALS] adc_i_fullscale)
+//   * ADC: 8-bit SAR over [vlo, vhi] = [0.15, 0.95] V, one bit per tbit
+// Pins follow the names the framework discovers (INP/INN/IN/OUT/CLK/VDD/VSS,
+// OUT<7:0>/INP<7:0> buses).  Retune the parameters when you change the node,
+// supply or [HW] vmax.
+simulator lang=spectre
+
+ahdl_include "dac_pwr.va"
+ahdl_include "opamp_pwr.va"
+ahdl_include "sar_adc8_pwr.va"
+
+subckt DAC_8b INP\<7\> INP\<6\> INP\<5\> INP\<4\> INP\<3\> INP\<2\> INP\<1\> \
+        INP\<0\> OUT VDD VSS
+parameters vfs=0.602353 vth=0.55 vlog=1.1
+    XDAC (INP\<7\> INP\<6\> INP\<5\> INP\<4\> INP\<3\> INP\<2\> INP\<1\> \
+          INP\<0\> OUT VDD VSS) dac_pwr vref=vfs vtrans=vth vlogic=vlog \
+          trise=0.5n tfall=0.5n tdel=0.1n i_static=20u c_bit=40f
+ends DAC_8b
+
+subckt TIA_8b IN OUT VDD VSS
+parameters rf=500 vcm=0.55
+    VCM (vcm_n VSS) vsource dc=vcm type=dc
+    RF (IN OUT) resistor r=rf
+    XOP (OUT VSS vcm_n IN VDD VSS) opamp_pwr gain=1e5 freq_unitygain=1e9 \
+        slew_rate=1e9 iin_max=1m rout=50 vsoft=0.02 i_quiescent=150u
+ends TIA_8b
+
+subckt SUBTRACTOR_8b INP INN OUT VDD VSS
+parameters r=10k gain=1 vmid=0.55
+    VMID (vmid_n VSS) vsource dc=vmid type=dc
+    R1 (INN np) resistor r=r
+    R2 (np vmid_n) resistor r=r*gain
+    R3 (INP nn) resistor r=r
+    R4 (nn OUT) resistor r=r*gain
+    XOP (OUT VSS np nn VDD VSS) opamp_pwr gain=1e5 freq_unitygain=1e9 \
+        slew_rate=1e9 iin_max=1m rout=50 vsoft=0.02 i_quiescent=100u
+ends SUBTRACTOR_8b
+
+subckt ADC_8b IN CLK OUT\<7\> OUT\<6\> OUT\<5\> OUT\<4\> OUT\<3\> OUT\<2\> \
+        OUT\<1\> OUT\<0\> VDD VSS
+parameters vlo=0.15 vhi=0.95 vlog=1.1 tbit=4n
+    // free-running SAR bit clock; a conversion starts on each CLK rising edge
+    VSCLK (sclk VSS) vsource type=pulse val0=0 val1=vlog period=tbit \
+        width=tbit/2 rise=10p fall=10p
+    XADC (OUT\<7\> OUT\<6\> OUT\<5\> OUT\<4\> OUT\<3\> OUT\<2\> OUT\<1\> \
+          OUT\<0\> IN CLK sclk VDD VSS) sar_adc8_pwr vmin=vlo vmax=vhi \
+          vlogic_high=vlog thresh=vlog/2 td=0.1n tt=0.1n t_pulse=tbit/2 \
+          t_edge=tbit/20 i_static=50u i_cmp=100u c_unit=10f vref=vlog
+ends ADC_8b

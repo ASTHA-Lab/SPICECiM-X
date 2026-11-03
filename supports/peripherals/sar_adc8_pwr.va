@@ -1,0 +1,69 @@
+// Power-annotated 8-bit SAR ADC (behavioural, Verilog-A).
+// From the EnPower project (S M Mojahidul Ahsan, KU), derived from adc.va by
+// A. Sidun (AnalogHub.ie).  Scalar bit outputs b7 (MSB) .. b0 (LSB) so the
+// instance terminal order is unambiguous.
+// V(in) is sampled on the rising edge of clk; one bit is resolved per rising
+// edge of sclk (MSB first); the output code updates when the last bit is in.
+// code = floor(256 * (V(in) - vmin) / (vmax - vmin)), clamped to 0..255.
+// Supply branch (vdd, vss): i_static + per-bit decision pulse (comparator +
+// binary-weighted CDAC switching).
+`include "constants.vams"
+`include "disciplines.vams"
+module sar_adc8_pwr(b7, b6, b5, b4, b3, b2, b1, b0, in, clk, sclk, vdd, vss);
+    parameter real vmin = 0.0;
+    parameter real vmax = 1.0 from (vmin:inf);
+    parameter real td = 1p from [0:inf);
+    parameter real tt = 1p from [0:inf);
+    parameter real vlogic_high = 1.8;
+    parameter real vlogic_low = 0.0;
+    parameter real thresh = 0.9;
+    parameter real i_static = 50u from [0:inf);
+    parameter real i_cmp = 100u from [0:inf);
+    parameter real c_unit = 10f from [0:inf);
+    parameter real vref = 1.0 from (0:inf);
+    parameter real t_pulse = 20n from (0:inf);
+    parameter real k_down = 0.5 from [0:1];
+    parameter real t_edge = 2n from (0:inf);
+    input in, clk, sclk, vdd, vss;
+    output b7, b6, b5, b4, b3, b2, b1, b0;
+    electrical b7, b6, b5, b4, b3, b2, b1, b0, in, clk, sclk, vdd, vss;
+    integer result, outcode, bitidx, converting, decided;
+    real i_lvl, t_off;
+
+    analog begin
+        @(initial_step) begin
+            result = 0; outcode = 0; bitidx = -1; converting = 0; i_lvl = 0.0; t_off = 1.0e6;
+        end
+        @(cross(V(clk) - thresh, +1)) begin
+            result = floor(256.0 * (V(in) - vmin) / (vmax - vmin));
+            if (result > 255) result = 255;
+            else if (result < 0) result = 0;
+            bitidx = 7;
+            converting = 1;
+        end
+        @(cross(V(sclk) - thresh, +1)) begin
+            if (converting) begin
+                decided = (result >> bitidx) & 1;
+                i_lvl = i_cmp + (pow(2.0, bitidx) * c_unit * vref / t_pulse) * (decided ? 1.0 : k_down);
+                t_off = $abstime + t_pulse;
+                bitidx = bitidx - 1;
+                if (bitidx < 0) begin
+                    converting = 0;
+                    outcode = result;
+                end
+            end
+        end
+        @(timer(t_off)) begin
+            i_lvl = 0.0;
+        end
+        V(b7) <+ transition(((outcode >> 7) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b6) <+ transition(((outcode >> 6) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b5) <+ transition(((outcode >> 5) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b4) <+ transition(((outcode >> 4) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b3) <+ transition(((outcode >> 3) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b2) <+ transition(((outcode >> 2) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b1) <+ transition(((outcode >> 1) & 1) ? vlogic_high : vlogic_low, td, tt);
+        V(b0) <+ transition(((outcode >> 0) & 1) ? vlogic_high : vlogic_low, td, tt);
+        I(vdd, vss) <+ i_static + transition(i_lvl, 0, t_edge, t_edge);
+    end
+endmodule

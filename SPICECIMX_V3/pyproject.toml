@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spicecimx"
+version = "1.1.0"
+description = "SPICE-accurate simulation framework for Transformer inference on ReRAM AIMC crossbars"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.22",
+    "pandas>=1.4",
+]
+
+[project.optional-dependencies]
+# ViT inference (cli.infer) and the trainer (main.py)
+torch = ["torch>=2.0", "torchvision>=0.15", "Pillow>=9"]
+test = ["pytest>=7"]
+all = ["torch>=2.0", "torchvision>=0.15", "Pillow>=9", "pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/ASTHA-Lab/SPICECiM-X"
+Issues = "https://github.com/ASTHA-Lab/SPICECiM-X/issues"
+
+[tool.setuptools.packages.find]
+include = ["spicecimx*"]
+
+[tool.setuptools.package-data]
+"spicecimx.cli" = ["assets/*.html", "assets/icons/*.png"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

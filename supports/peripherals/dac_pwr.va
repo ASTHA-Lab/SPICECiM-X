@@ -1,0 +1,55 @@
+// Power-annotated 8-bit DAC (behavioural, Verilog-A).
+// From the EnPower project (S M Mojahidul Ahsan, KU), derived from the
+// dac_8bit.va example of the Cadence AHDL library.
+// V(vout) = vref * code/256.  Supply branch (vdd, vss): i_static + |current
+// delivered at vout| + c_bit*|dV/dt| per switching bit line.
+`include "constants.vams"
+`include "disciplines.vams"
+module dac_pwr(vd7, vd6, vd5, vd4, vd3, vd2, vd1, vd0, vout, vdd, vss);
+    electrical vd7, vd6, vd5, vd4, vd3, vd2, vd1, vd0, vout, vdd, vss;
+    parameter real vref = 0.2 from [0:inf);
+    parameter real trise = 2n from (0:inf);
+    parameter real tfall = 2n from (0:inf);
+    parameter real tdel = 1n from [0:inf);
+    parameter real vtrans = 0.9;
+    parameter real vlogic = 1.8;
+    parameter real i_static = 20u from [0:inf);
+    parameter real c_bit = 40f from [0:inf);
+    real out_scaled;
+    real s7, s6, s5, s4, s3, s2, s1, s0;
+    // Spectre allows ddt() only symbolically (no abs(ddt(x))), so each bit-line
+    // slope lives on an internal node, scaled by trise to keep it O(1 V).
+    electrical d7, d6, d5, d4, d3, d2, d1, d0;
+
+    analog begin
+        out_scaled = 0.0;
+        out_scaled = out_scaled + ((V(vd7) > vtrans) ? 1.0/2.0   : 0.0);
+        out_scaled = out_scaled + ((V(vd6) > vtrans) ? 1.0/4.0   : 0.0);
+        out_scaled = out_scaled + ((V(vd5) > vtrans) ? 1.0/8.0   : 0.0);
+        out_scaled = out_scaled + ((V(vd4) > vtrans) ? 1.0/16.0  : 0.0);
+        out_scaled = out_scaled + ((V(vd3) > vtrans) ? 1.0/32.0  : 0.0);
+        out_scaled = out_scaled + ((V(vd2) > vtrans) ? 1.0/64.0  : 0.0);
+        out_scaled = out_scaled + ((V(vd1) > vtrans) ? 1.0/128.0 : 0.0);
+        out_scaled = out_scaled + ((V(vd0) > vtrans) ? 1.0/256.0 : 0.0);
+        V(vout) <+ transition(vref * out_scaled, tdel, trise, tfall);
+        s7 = transition((V(vd7) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s6 = transition((V(vd6) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s5 = transition((V(vd5) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s4 = transition((V(vd4) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s3 = transition((V(vd3) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s2 = transition((V(vd2) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s1 = transition((V(vd1) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        s0 = transition((V(vd0) > vtrans) ? vlogic : 0.0, 0, trise, tfall);
+        V(d7) <+ trise * ddt(s7);
+        V(d6) <+ trise * ddt(s6);
+        V(d5) <+ trise * ddt(s5);
+        V(d4) <+ trise * ddt(s4);
+        V(d3) <+ trise * ddt(s3);
+        V(d2) <+ trise * ddt(s2);
+        V(d1) <+ trise * ddt(s1);
+        V(d0) <+ trise * ddt(s0);
+        I(vdd, vss) <+ i_static + abs(I(<vout>))
+                     + c_bit / trise * (abs(V(d7)) + abs(V(d6)) + abs(V(d5)) + abs(V(d4))
+                                      + abs(V(d3)) + abs(V(d2)) + abs(V(d1)) + abs(V(d0)));
+    end
+endmodule

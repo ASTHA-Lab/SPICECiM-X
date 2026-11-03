@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPICECiM-X Help &amp; Tutorial</title>
+<style>
+:root{
+  --bg:#13161c; --bg2:#191d25; --panel:#1e232c; --panel2:#232935;
+  --fg:#e6e9ef; --muted:#9aa3b2; --faint:#6b7383;
+  --accent:#4c8bf5; --accent2:#7aa7ff; --accent-fg:#ffffff;
+  --border:#2c333f; --code-bg:#0f1217; --code-fg:#d7dde7;
+  --note:#4c8bf5; --tip:#36b37e; --warn:#e0a73b; --danger:#e5575f;
+  --kbd:#2a3340; --table-stripe:#1b2029; --shadow:0 6px 24px rgba(0,0,0,.35);
+  --radius:10px; --maxw:920px; --sidew:268px;
+}
+:root[data-theme=light]{
+  --bg:#f6f7f9; --bg2:#eef1f5; --panel:#ffffff; --panel2:#f1f4f8;
+  --fg:#1d2330; --muted:#5b6573; --faint:#8a93a3;
+  --accent:#2f6fe0; --accent2:#1d56c0; --accent-fg:#ffffff;
+  --border:#dde2ea; --code-bg:#0f1217; --code-fg:#d7dde7;
+  --kbd:#e7ebf1; --shadow:0 6px 24px rgba(20,30,60,.10);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.86em;background:var(--panel2);color:var(--code-fg);
+  padding:.1em .42em;border-radius:5px;border:1px solid var(--border)}
+:root[data-theme=light] code{color:#1d2330;background:var(--panel2)}
+pre{background:var(--code-bg);color:var(--code-fg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.55;
+  margin:14px 0}
+pre code{background:none;border:none;padding:0;color:inherit;font-size:13.5px}
+.cmd{color:#8fd3ff}.flag{color:#ffd479}.cmt{color:#7d8799}.str{color:#a5e0a5}
+
+/* layout */
+header.top{position:sticky;top:0;z-index:30;background:rgba(19,22,28,.86);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+:root[data-theme=light] header.top{background:rgba(246,247,249,.86)}
+.top-in{max-width:calc(var(--maxw) + var(--sidew) + 80px);margin:0 auto;
+  display:flex;align-items:center;gap:14px;padding:12px 22px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:700;font-size:18px;letter-spacing:.2px}
+.logo .mark{width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),#9b6bff);display:grid;place-items:center;
+  color:#fff;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
+.logo .ver{font-size:11px;font-weight:600;color:var(--muted);
+  border:1px solid var(--border);padding:1px 7px;border-radius:20px;margin-left:2px}
+.spacer{flex:1}
+.tbtn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg);
+  border-radius:8px;padding:7px 11px;font-size:13px;display:inline-flex;gap:7px;align-items:center}
+.tbtn:hover{border-color:var(--accent)}
+.search{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);
+  border-radius:8px;padding:6px 10px;min-width:190px}
+.search input{border:none;background:none;color:var(--fg);outline:none;font-size:13px;width:100%}
+.search svg{flex:0 0 auto;opacity:.6}
+
+.wrap{max-width:calc(var(--maxw) + var(--sidew) + 80px);margin:0 auto;
+  display:grid;grid-template-columns:var(--sidew) 1fr;gap:40px;padding:26px 22px 90px}
+nav.toc{position:sticky;top:74px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;
+  padding-right:6px;font-size:13.5px}
+nav.toc .grp{margin:2px 0 14px}
+nav.toc .grp>span{display:block;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;
+  font-size:10.5px;font-weight:700;margin:0 0 6px 10px}
+nav.toc a{display:block;color:var(--muted);padding:5px 11px;border-radius:7px;
+  border-left:2px solid transparent;line-height:1.35}
+nav.toc a:hover{color:var(--fg);background:var(--panel);text-decoration:none}
+nav.toc a.active{color:var(--accent2);background:var(--panel);border-left-color:var(--accent);font-weight:600}
+
+main{min-width:0;max-width:var(--maxw)}
+section{scroll-margin-top:84px;margin:0 0 40px}
+h1{font-size:30px;line-height:1.2;margin:6px 0 8px;letter-spacing:-.4px}
+h2{font-size:23px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);
+  letter-spacing:-.2px;scroll-margin-top:84px}
+h2 .n{color:var(--accent);font-weight:700;margin-right:10px;font-size:18px;
+  border:1px solid var(--border);border-radius:7px;padding:2px 9px;background:var(--panel)}
+h3{font-size:17px;margin:26px 0 8px;color:var(--fg)}
+h4{font-size:14.5px;margin:18px 0 6px;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+.lead{font-size:17px;color:var(--muted);margin:8px 0 18px}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:5px 0}
+hr{border:none;border-top:1px solid var(--border);margin:30px 0}
+
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.6px;
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--panel);font-weight:600;color:var(--fg);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.04em}
+tbody tr:nth-child(even){background:var(--bg2)}
+tbody tr:hover{background:var(--panel)}
+td.def{white-space:nowrap;color:var(--accent2);font-family:ui-monospace,monospace;font-size:12.5px}
+table.params td:first-child{white-space:nowrap}
+
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 22px}
+.chiprow a{font-size:12.5px;background:var(--panel);border:1px solid var(--border);
+  padding:4px 11px;border-radius:20px;color:var(--muted);font-family:ui-monospace,monospace}
+.chiprow a:hover{border-color:var(--accent);color:var(--accent2);text-decoration:none}
+
+.callout{border:1px solid var(--border);border-left-width:3px;border-radius:8px;
+  padding:11px 15px;margin:15px 0;background:var(--panel);font-size:14px}
+.callout b{display:block;margin-bottom:3px;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+.callout.note{border-left-color:var(--note)} .callout.note b{color:var(--note)}
+.callout.tip{border-left-color:var(--tip)} .callout.tip b{color:var(--tip)}
+.callout.warn{border-left-color:var(--warn)} .callout.warn b{color:var(--warn)}
+.callout.danger{border-left-color:var(--danger)} .callout.danger b{color:var(--danger)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px}
+.card h4{margin:0 0 6px;color:var(--accent2)}
+.card p{margin:0;font-size:13.5px;color:var(--muted)}
+
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps>li{counter-increment:step;position:relative;padding:2px 0 14px 42px;margin:0}
+.steps>li::before{content:counter(step);position:absolute;left:0;top:0;width:28px;height:28px;
+  background:var(--accent);color:#fff;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;font-size:13px}
+.steps>li:not(:last-child)::after{content:"";position:absolute;left:13.5px;top:30px;bottom:0;
+  width:1px;background:var(--border)}
+
+kbd{background:var(--kbd);border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;
+  padding:1px 6px;font-size:12px;font-family:ui-monospace,monospace}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;
+  background:var(--panel2);border:1px solid var(--border);color:var(--accent2);margin-left:6px;vertical-align:middle}
+.hidden{display:none!important}
+footer{max-width:calc(var(--maxw) + var(--sidew) + 80px);margin:0 auto;padding:24px 22px 50px;
+  color:var(--faint);font-size:12.5px;border-top:1px solid var(--border)}
+
+@media (max-width:880px){
+  .wrap{grid-template-columns:1fr;gap:0}
+  nav.toc{position:fixed;inset:0 auto 0 0;width:84%;max-width:320px;background:var(--bg2);
+    border-right:1px solid var(--border);padding:74px 14px 20px;transform:translateX(-104%);
+    transition:transform .22s ease;z-index:40;max-height:none}
+  nav.toc.open{transform:none}
+  .menu-btn{display:inline-flex!important}
+  .search{display:none}
+}
+.menu-btn{display:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:35;opacity:0;pointer-events:none;transition:.2s}
+.scrim.show{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <button class="tbtn menu-btn" aria-label="menu" onclick="">&#9776;</button>
+    <div class="logo"><span class="mark">SX</span> SPICECiM-X <span class="ver">v1.1.0</span></div>
+    <div class="spacer"></div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" placeholder="Filter parameters…" autocomplete="off">
+    </div>
+    <button class="tbtn" onclick="toggleTheme()">&#9681; <span id="themeLbl">Light</span></button>
+  </div>
+</header>
+<div class="scrim"></div>
+
+<div class="wrap">
+<nav class="toc">
+  <div class="grp"><span>Getting started</span>
+    <a href="#overview">Overview</a>
+    <a href="#features">1 · Features &amp; Capabilities</a>
+    <a href="#install">2 · Installation &amp; Dependencies</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#pipeline">The Pipeline</a>
+  </div>
+  <div class="grp"><span>Reference</span>
+    <a href="#commands">4 · Runtime Commands &amp; GUI</a>
+    <a href="#config">3 · Configuration Reference</a>
+    <a href="#modes">Simulation Modes</a>
+    <a href="#peripherals">Peripherals: S | H</a>
+    <a href="#outputs">Output &amp; Reports</a>
+  </div>
+  <div class="grp"><span>Recipes &amp; help</span>
+    <a href="#examples">5 · Example Scenarios</a>
+    <a href="#trouble">6 · Troubleshooting &amp; Debugging</a>
+    <a href="#extend">7 · Extending &amp; Modifying</a>
+    <a href="#faq">FAQ &amp; Tips</a>
+  </div>
+</nav>
+
+<main>
+<section id="overview">
+  <h1>SPICECiM-X — Help &amp; Tutorial</h1>
+  <p class="lead">SPICE-accurate simulation of Vision Transformer inference on ReRAM (1T1R) analog
+  in-memory-computing crossbars.</p>
+  <p>SPICECiM-X maps every static-weight matmul of a trained ViT onto differential 1T1R crossbars. That
+  covers Q/K/V, W_O, FFN W1/W2 and the head. It simulates the crossbars with Cadence&nbsp;Spectre, with the
+  jobs dispatched in parallel across your licenses, or from SPICE-built tables in <code>fastdc</code>. An
+  affine de-map and a voltage pre-warp recover floating-point results. Softmax, LayerNorm and the
+  activation&nbsp;×&nbsp;activation products run digitally. It reports <b>accuracy</b> (SW–HW agreement and,
+  with labels, against ground truth), <b>energy</b>, <b>latency</b> and <b>TOPS/W</b>.</p>
+  <div class="callout note"><b>How to use this page</b>
+  Use the left index to jump between sections. The search box at the top filters the parameter tables in the
+  Configuration Reference. All commands run from the repository root, and the annotated reference
+  configuration is <code>config_cifar10.ini</code>.</div>
+</section>
+
+<section id="features">
+  <h2><span class="n">1</span>Features &amp; Capabilities</h2>
+  <div class="cards">
+    <div class="card"><h4>Five simulation modes</h4><p>transient, dc, fastdc, hybrid, and auto, which runs a
+      transient energy pass followed by a fastdc accuracy pass.</p></div>
+    <div class="card"><h4>Full analog chain</h4><p>1T1R cell, BL driver, differential ±TIAs, subtractor and
+      ADC. Each converter can be an analytic model (S) or a SPICE-characterised subckt (H), in every mode.</p></div>
+    <div class="card"><h4>Config-driven PDK</h4><p>Transistor geometry and Verilog-A device params live in
+      <code>[PDK]</code>. The transient and DC decks both use them, together with <code>[HW]</code> and <code>[PARASITICS]</code>.</p></div>
+    <div class="card"><h4>Operating-point aware</h4><p>Process corner, Vdd/Vss, temperature and tnom drive both
+      inference and the characterisation that calibrates it.</p></div>
+    <div class="card"><h4>Cached characterisation</h4><p>The array table is built once and cached by a hash of
+      the hardware config. It rebuilds automatically when that config changes, and a failed Spectre run aborts
+      the build instead of caching a bad table.</p></div>
+    <div class="card"><h4>Parasitics</h4><p>Per-cell wire R/C reproduces IR drop, and the characterisation
+      tracks it.</p></div>
+    <div class="card"><h4>Energy &amp; latency models</h4><p>Walden / Accelergy ADC, switched-cap DAC,
+      static-bias TIA, cycle-accurate latency, bit-slicing, converter sharing, node and corner scaling.</p></div>
+    <div class="card"><h4>Accuracy reporting</h4><p>Torch-vs-GT, IMC-vs-GT and SW–HW agreement with top-k,
+      via an extensible task registry.</p></div>
+    <div class="card"><h4>Desktop GUI</h4><p>A config editor and run console with one tab per section, Run /
+      Stop / Save / Report, S | H peripheral switches, and this help page.</p></div>
+  </div>
+</section>
+
+<section id="install">
+  <h2><span class="n">2</span>Installation &amp; Dependencies</h2>
+  <h3>Requirements</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Needed for</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><b>Python ≥ 3.9</b></td><td>everything</td><td></td></tr>
+      <tr><td><b>NumPy, pandas</b></td><td>everything</td><td>Hard dependencies in <code>pyproject.toml</code>.</td></tr>
+      <tr><td><b>torch, torchvision, Pillow</b></td><td>training and inference</td><td>The <code>[torch]</code> extra.</td></tr>
+      <tr><td><b>Tkinter</b> (<code>python3-tk</code>)</td><td>the GUI</td><td>An OS package on Linux, not a pip one.</td></tr>
+      <tr><td><b>Cadence Spectre</b></td><td>every mode and characterisation</td><td>Tested with Spectre 24.1, on <code>PATH</code>. Only <code>cli.run --selftest</code> runs without it. <code>fastdc</code> inference reads tables, but Spectre builds them once.</td></tr>
+      <tr><td><b>PDK transistor models</b></td><td>every SPICE run</td><td>Set <code>[PATHS] transistor_model</code>. The examples use Cadence GPDK 45/180 nm, which cannot be redistributed.</td></tr>
+      <tr><td>pytest ≥ 7</td><td>tests</td><td>The <code>[test]</code> extra.</td></tr>
+    </tbody>
+  </table>
+  <h3>Install</h3>
+  <p>From the repository root. The package directory is <code>SPICECIMX_V3</code>, and the name is case-sensitive:</p>
+  <pre><code><span class="cmd">pip</span> install -e <span class="str">"SPICECIMX_V3[torch,test]"</span>
+
+<span class="cmt"># sanity check of the IMC kernel (numpy only, no Spectre)</span>
+<span class="cmd">python</span> -m spicecimx.cli.run <span class="flag">--selftest</span></code></pre>
+  <div class="callout tip"><b>GUI on Linux</b>
+  If the GUI raises <code>ModuleNotFoundError: No module named 'tkinter'</code>, install your distribution's
+  Tk package, for example <code>sudo apt install python3-tk</code>.</div>
+</section>
+
+<section id="quickstart">
+  <h2>Quick Start</h2>
+  <ol class="steps">
+    <li><b>Point the config at your PDK and images.</b> No PDK data ships with SPICECiM-X. In
+      <code>config_cifar10.ini</code>, replace the <code>/path/to/…</code> placeholder in
+      <code>[PATHS] transistor_model</code> with your PDK <code>.scs</code>, set <code>stdcell_netlist</code> to a
+      std-cell netlist for your PDK (start from <code>supports/standard_cell.netlist</code> and keep its subckt
+      names and pins), set <code>[PDK] transistor_model_name</code>, and point <code>images_dir</code> at a
+      folder of test images. Relative paths resolve against <code>project_dir</code>, which resolves against
+      the config file's folder. See <code>supports/README.md</code>.</li>
+    <li><b>Train or bring a checkpoint.</b> <code>python main.py --config config_cifar10.ini</code> writes
+      <code>best.pt</code>/<code>last.pt</code> to <code>[SAVE] out_dir</code>.</li>
+    <li><b>Characterise once.</b> <code>python -m spicecimx.cli.characterize --config config_cifar10.ini</code>
+      (cell table, for <code>fastdc</code>/<code>auto</code>) and
+      <code>python -m spicecimx.cli.characterize_array --config config_cifar10.ini</code> (array table).
+      <code>infer</code> also builds the array table automatically if it is missing or stale.</li>
+    <li><b>Run.</b> <code>python -m spicecimx.cli.infer --config config_cifar10.ini --images_dir Test_Image/t1_ds --limit 100</code>.
+      You can also open the GUI with <code>--gui</code> and press <b>Run</b>.</li>
+    <li><b>Read the reports</b> under <code>&lt;dump_root&gt;/&lt;batch&gt;/</code>, where <code>&lt;batch&gt;</code> is the folder name of <code>images_dir</code>.</li>
+  </ol>
+  <div class="callout note"><b>First run is the slow one</b>
+  The array characterisation is a one-time Spectre sweep, cached at <code>[PATHS] array_table_path</code>.
+  Later runs with the same hardware config reuse it.</div>
+</section>
+
+<section id="pipeline">
+  <h2>The Pipeline</h2>
+  <table>
+    <thead><tr><th>Stage</th><th>Command</th><th>Produces</th></tr></thead>
+    <tbody>
+      <tr><td><b>0. Training</b></td><td><code>python main.py --config …</code></td>
+        <td><code>best.pt</code> / <code>last.pt</code> in <code>[SAVE] out_dir</code>.</td></tr>
+      <tr><td><b>1. Cell characterisation</b> <span class="pill">fastdc</span></td>
+        <td><code>cli.characterize</code></td>
+        <td>Single-cell I–V table for <code>fastdc</code>, and the <code>dc</code> fallback pre-warp, written to <code>[PATHS] char_table_path</code> (<code>.npz</code>).</td></tr>
+      <tr><td><b>2. Array characterisation</b></td>
+        <td><code>cli.characterize_array</code> (also auto-invoked by inference)</td>
+        <td>Subarray I–V table at two sizes. It is used for the voltage pre-warp in every mode and for <code>R_access = auto</code>.</td></tr>
+      <tr><td><b>3. Inference</b></td>
+        <td><code>cli.infer</code></td>
+        <td>Predictions, accuracy report, and per-inference power/energy/latency report.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip"><b>When the table rebuilds</b>
+  The array table hash covers the transistor model, corner, vdd/vss, temperature, tnom, the <code>[HW]</code>
+  device params, <code>[PDK]</code>, <code>[PARASITICS]</code>, the grid, the DC Verilog-A and the std-cell
+  netlist. <code>R_access</code> is not included because it is derived from the table. Use
+  <code>characterize_array --force</code> to rebuild deliberately.</div>
+</section>
+
+<section id="commands">
+  <h2><span class="n">4</span>Runtime Commands &amp; GUI</h2>
+
+  <h3>Launch the GUI</h3>
+  <pre><code><span class="cmd">python</span> -m spicecimx.cli.infer <span class="flag">--config</span> config_cifar10.ini <span class="flag">--gui</span>
+<span class="cmd">python</span> -m spicecimx.cli.gui <span class="flag">--config</span> config_cifar10.ini</code></pre>
+  <p>The GUI has one tab per config section. The toolbar:</p>
+  <ul>
+    <li><b>Run / Stop</b>: saves the config, launches <code>spicecimx.cli.infer</code> with the config's folder as the working directory, and streams the log. Stop terminates the run.</li>
+    <li><b>Save config</b>: writes your edits back to the <code>.ini</code>.</li>
+    <li><b>Report</b>: shows <code>Final_report.txt</code>, the accuracy summary and the energy report of the current batch.</li>
+    <li><b>Help / Tutorial</b>: opens this page. <b>Clear log</b> clears the console. <b>extra CLI args</b> appends flags, for example <code>--mode auto --limit 5</code>.</li>
+  </ul>
+
+  <h3>Inference</h3>
+  <pre><code><span class="cmd">python</span> -m spicecimx.cli.infer <span class="flag">--config</span> config_cifar10.ini [options]</code></pre>
+  <table>
+    <thead><tr><th>Flag</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>--config PATH</code></td><td>Config file. The default is <code>config.ini</code>, so pass it explicitly.</td></tr>
+      <tr><td><code>--mode M</code></td><td>Override <code>[SIM] mode</code>: transient / dc / hybrid / fastdc / auto.</td></tr>
+      <tr><td><code>--images_dir DIR</code></td><td>Override the image folder. Its leaf name is the batch id.</td></tr>
+      <tr><td><code>--checkpoint PATH</code></td><td>Explicit checkpoint. <b>A path that does not exist is an error.</b></td></tr>
+      <tr><td><code>--project DIR</code></td><td>Re-root the config's relative <code>[PATHS]</code> under DIR.</td></tr>
+      <tr><td><code>--dump_root DIR</code></td><td>Override the report / dump root.</td></tr>
+      <tr><td><code>--licenses N</code></td><td>Override <code>license_count</code>.</td></tr>
+      <tr><td><code>--limit N</code></td><td>Process only the first N images (0 = all).</td></tr>
+      <tr><td><code>--output_classes K</code></td><td>Keep the first K logits of both the Torch and the IMC outputs.</td></tr>
+      <tr><td><code>--batch_all</code></td><td>Time-multiplex all images through each IMC matmul.</td></tr>
+      <tr><td><code>--no_intermediates</code></td><td>Skip per-layer CSV dumps.</td></tr>
+      <tr><td><code>--gui</code></td><td>Open the GUI instead of running.</td></tr>
+    </tbody>
+  </table>
+  <p>Command-line paths are relative to the current directory. Without <code>--checkpoint</code>, the run looks
+  for <code>&lt;out_dir&gt;/best.pt</code>, <code>&lt;out_dir&gt;/last.pt</code>, then
+  <code>&lt;project_dir&gt;/outputs/{best,last}.pt</code>. It never picks the newest <code>*.pt</code>
+  elsewhere. The state dict is loaded strictly, with the <code>module.</code> and <code>_orig_mod.</code>
+  prefixes stripped. The input channel count is read from the checkpoint.</p>
+
+  <h3>Characterisation commands</h3>
+  <pre><code><span class="cmt"># array table (normally automatic; --force rebuilds)</span>
+<span class="cmd">python</span> -m spicecimx.cli.characterize_array <span class="flag">--config</span> config_cifar10.ini [<span class="flag">--force</span>]
+
+<span class="cmt"># single-cell fastdc table; DC Verilog-A defaults to [PATHS] device_model_dc</span>
+<span class="cmd">python</span> -m spicecimx.cli.characterize <span class="flag">--config</span> config_cifar10.ini [<span class="flag">--output</span> supports/cell_table_45nm.npz]
+    [<span class="flag">--veriloga</span> FILE] [<span class="flag">--corner</span> tt] [<span class="flag">--work_dir</span> DIR] [<span class="flag">--spectre</span> BIN]
+    [<span class="flag">--T_min</span> <span class="flag">--T_max</span> <span class="flag">--T_step</span> <span class="flag">--V_min</span> <span class="flag">--V_max</span> <span class="flag">--V_step</span>]</code></pre>
+  <div class="callout note"><b>Cell table format</b>
+  <code>characterize</code> writes an <code>.npz</code> that stores its own grid; the reference config's
+  <code>char_table_path</code> (<code>supports/cell_table_45nm.npz</code>) is where it lands by default. A
+  <code>.csv</code> table exported from ADE also works, but it has no V axis, so
+  <code>fastdc_V_min/V_max/V_step</code> must match its column count (e.g. 0..1.0 V in 0.01 V steps = 101
+  columns).</div>
+
+  <h3>Demo runner and tests</h3>
+  <pre><code><span class="cmd">python</span> -m spicecimx.cli.run <span class="flag">--selftest</span>            <span class="cmt"># numpy-only kernel check</span>
+<span class="cmd">cd</span> SPICECIMX_V3
+<span class="cmd">pytest</span>                                         <span class="cmt"># portable: no Spectre or torch needed</span></code></pre>
+</section>
+
+<section id="config">
+  <h2><span class="n">3</span>Configuration Reference</h2>
+  <p>Every key by section. <b>Default</b> is the value used when the key is absent (<code>spicecimx/config.py</code>).
+  <i>ref</i> marks a different value used in <code>config_cifar10.ini</code>. <code>[DATA] [MODEL] [TRAIN] [SAVE]</code>
+  are required and have no defaults; their tables show the reference values. Every relative <code>[PATHS]</code>
+  entry resolves against <code>project_dir</code>, and <code>project_dir</code> resolves against the folder of the
+  config file.</p>
+  <div class="chiprow"><a href="#cfg-data">[DATA]</a><a href="#cfg-model">[MODEL]</a><a href="#cfg-train">[TRAIN]</a><a href="#cfg-save">[SAVE]</a><a href="#cfg-hw">[HW]</a><a href="#cfg-sim">[SIM]</a><a href="#cfg-paths">[PATHS]</a><a href="#cfg-peripherals">[PERIPHERALS]</a><a href="#cfg-latency">[LATENCY]</a><a href="#cfg-subcircuits">[SUBCIRCUITS]</a><a href="#cfg-pdk">[PDK]</a><a href="#cfg-parasitics">[PARASITICS]</a><a href="#cfg-interconnect">[INTERCONNECT]</a><a href="#cfg-accuracy">[ACCURACY]</a></div>
+<h3 id="cfg-data">[DATA]</h3>
+<p class="muted">Dataset and image geometry. These must match the checkpoint.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Ref value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>dataset</code></td><td class="def">cifar10</td><td><code>cifar10</code>, <code>mnist</code>, <code>fashion_mnist</code> (also <code>fashion</code>, <code>fashionmnist</code>, <code>mnist-fashion</code>).</td></tr>
+<tr><td><code>data_root</code></td><td class="def">./data</td><td>torchvision dataset folder (trainer).</td></tr>
+<tr><td><code>img_height</code></td><td class="def">32</td><td>Input height; test images are resized to it.</td></tr>
+<tr><td><code>img_width</code></td><td class="def">32</td><td>Input width.</td></tr>
+<tr><td><code>channels</code></td><td class="def">auto</td><td><code>auto</code> = 1 for *mnist* datasets, else 3. At inference the channel count is taken from the checkpoint.</td></tr>
+<tr><td><code>val_split</code></td><td class="def">0.1</td><td>Validation fraction (trainer).</td></tr>
+<tr><td><code>num_workers</code></td><td class="def">4</td><td>DataLoader workers (trainer).</td></tr>
+<tr><td><code>augment</code></td><td class="def">true</td><td>Training augmentation (trainer).</td></tr>
+</tbody></table>
+<h3 id="cfg-model">[MODEL]</h3>
+<p class="muted">ViT architecture. It must match the checkpoint; loading is strict.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Ref value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>patch_size</code></td><td class="def">4</td><td>Square patch side; it must divide the image size.</td></tr>
+<tr><td><code>d_model</code></td><td class="def">192</td><td>Embedding dimension.</td></tr>
+<tr><td><code>n_heads</code></td><td class="def">6</td><td>Attention heads.</td></tr>
+<tr><td><code>d_k</code></td><td class="def">0</td><td>Per-head key dim (0 = d_model / n_heads).</td></tr>
+<tr><td><code>d_v</code></td><td class="def">0</td><td>Per-head value dim (0 = d_model / n_heads).</td></tr>
+<tr><td><code>depth</code></td><td class="def">9</td><td>Encoder blocks.</td></tr>
+<tr><td><code>mlp_ratio</code></td><td class="def">2.0</td><td>FFN expansion ratio.</td></tr>
+<tr><td><code>dropout</code></td><td class="def">0.1</td><td>Dropout (inactive at inference).</td></tr>
+<tr><td><code>num_classes</code></td><td class="def">10</td><td>Classifier width.</td></tr>
+<tr><td><code>use_class_token</code></td><td class="def">true</td><td>Prepend a [CLS] token.</td></tr>
+<tr><td><code>pos_embed</code></td><td class="def">learnable</td><td>Positional embedding type.</td></tr>
+</tbody></table>
+<h3 id="cfg-train">[TRAIN]</h3>
+<p class="muted">Trainer hyper-parameters (<code>main.py</code>). Inference does not use them.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Ref value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>epochs</code></td><td class="def">300</td><td>Training epochs.</td></tr>
+<tr><td><code>batch_size</code></td><td class="def">128</td><td>Training batch size.</td></tr>
+<tr><td><code>lr</code></td><td class="def">3e-4</td><td>Learning rate.</td></tr>
+<tr><td><code>weight_decay</code></td><td class="def">0.05</td><td>Weight decay.</td></tr>
+<tr><td><code>betas</code></td><td class="def">0.9,0.999</td><td>Optimizer betas (comma-separated).</td></tr>
+<tr><td><code>warmup_epochs</code></td><td class="def">0</td><td>LR warmup epochs.</td></tr>
+<tr><td><code>lr_scheduler</code></td><td class="def">none</td><td>LR schedule.</td></tr>
+<tr><td><code>seed</code></td><td class="def">42</td><td>RNG seed.</td></tr>
+<tr><td><code>amp</code></td><td class="def">true</td><td>Mixed precision.</td></tr>
+<tr><td><code>device</code></td><td class="def">auto</td><td>auto / cpu / cuda.</td></tr>
+<tr><td><code>log_interval</code></td><td class="def">50</td><td>Steps between logs.</td></tr>
+</tbody></table>
+<h3 id="cfg-save">[SAVE]</h3>
+<p class="muted">Checkpoint location and workspace cleaning.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>out_dir</code></td><td class="def">required</td><td>Where the trainer writes <code>best.pt</code>/<code>last.pt</code>; <code>infer</code> looks here first. Relative paths resolve against <code>project_dir</code> at inference. <i>ref</i> <code>./cifar10/cifar10_large_vit_outputs</code>.</td></tr>
+<tr><td><code>save_weights</code></td><td class="def">required</td><td>Trainer: persist weights.</td></tr>
+<tr><td><code>save_best</code></td><td class="def">required</td><td>Trainer: keep the best-validation checkpoint.</td></tr>
+<tr><td><code>clean_workspace</code></td><td class="def">true</td><td>Clears <b>only the current batch's</b> folders at the start of a run: <code>&lt;hwsimdb_root&gt;/&lt;batch&gt;</code>, <code>&lt;dump_root&gt;/&lt;batch&gt;</code> and <code>&lt;tmp_root&gt;/&lt;batch&gt;</code>, where &lt;batch&gt; is the leaf name of <code>images_dir</code>. They are moved to <code>&lt;project_dir&gt;/trash/</code> and deleted in the background. Targets that contain the project dir, the images, <code>supports/</code>, the tables or <code>out_dir</code> are refused.</td></tr>
+</tbody></table>
+<h3 id="cfg-hw">[HW]</h3>
+<p class="muted">ReRAM device physics, crossbar tiling and the drive range.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Tox</code></td><td class="def">5.0e-9</td><td>Oxide thickness (m).</td></tr>
+<tr><td><code>Tref</code></td><td class="def">4.7249e-9</td><td>Reference filament thickness (m).</td></tr>
+<tr><td><code>Ik1</code></td><td class="def">6.14e-5</td><td>Current pre-factor (A).</td></tr>
+<tr><td><code>Vref</code></td><td class="def">0.43</td><td>Reference voltage (V).</td></tr>
+<tr><td><code>Tmax</code></td><td class="def">4.9e-9</td><td>Max filament thickness (LRS bound, m).</td></tr>
+<tr><td><code>Tmin</code></td><td class="def">3.3e-9</td><td>Min filament thickness (HRS bound, m).</td></tr>
+<tr><td><code>R_access</code></td><td class="def">auto</td><td>Effective per-cell series resistance (Ω). <code>auto</code> (or -1) fits it from the array table; a number is used as given.</td></tr>
+<tr><td><code>res_val</code></td><td class="def">0</td><td>Per-cell series R inside the transient cell model.</td></tr>
+<tr><td><code>cap_val</code></td><td class="def">0</td><td>Per-cell C inside the transient cell model.</td></tr>
+<tr><td><code>subarray_rows</code></td><td class="def">16</td><td>Rows per subarray.</td></tr>
+<tr><td><code>subarray_cols</code></td><td class="def">16</td><td>Columns per subarray.</td></tr>
+<tr><td><code>pe_rows</code></td><td class="def">2</td><td>Subarray rows per PE.</td></tr>
+<tr><td><code>pe_cols</code></td><td class="def">2</td><td>Subarray columns per PE.</td></tr>
+<tr><td><code>tile_rows</code></td><td class="def">2</td><td>PE rows per tile.</td></tr>
+<tr><td><code>tile_cols</code></td><td class="def">2</td><td>PE columns per tile.</td></tr>
+<tr><td><code>vmin</code></td><td class="def">0.0</td><td>Crossbar drive range, low end (V). It is used in every mode.</td></tr>
+<tr><td><code>vmax</code></td><td class="def">1.0</td><td>Crossbar drive range, high end (V). Activations are encoded as V = a·A + b within [vmin, vmax]. It is also the H-DAC full scale. <i>ref</i> 0.6.</td></tr>
+</tbody></table>
+<h3 id="cfg-sim">[SIM]</h3>
+<p class="muted">Mode, operating point, concurrency, failure handling, transient drive and settling, and the characterisation grids.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>mode</code></td><td class="def">transient</td><td><code>transient</code> | <code>dc</code> | <code>hybrid</code> | <code>fastdc</code> | <code>auto</code> (case-insensitive). See <a href='#modes'>Simulation Modes</a>. <i>ref</i> auto.</td></tr>
+<tr><td><code>process_corner</code></td><td class="def">stat</td><td>Section name in the transistor model .scs. <i>ref</i> tt.</td></tr>
+<tr><td><code>vdd</code></td><td class="def">1.8</td><td>Supply rail (V). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>vss</code></td><td class="def">0.0</td><td>Ground rail (V).</td></tr>
+<tr><td><code>temperature</code></td><td class="def">25.0</td><td>Ambient temperature (°C).</td></tr>
+<tr><td><code>tnom</code></td><td class="def">27.0</td><td>Nominal model temperature (°C); it overrides a literal tnom in the golden decks.</td></tr>
+<tr><td><code>license_count</code></td><td class="def">1</td><td>Max concurrent Spectre jobs (≥ 1). <i>ref</i> 16.</td></tr>
+<tr><td><code>pipeline_postprocess</code></td><td class="def">true</td><td>Post-process subarray N while N+1 simulates.</td></tr>
+<tr><td><code>postprocess_workers</code></td><td class="def">8</td><td>Post-processing pool size.</td></tr>
+<tr><td><code>spectre_args</code></td><td class="def">+preset=mx …</td><td>Extra Spectre arguments (space-separated).</td></tr>
+<tr><td><code>on_job_failure</code></td><td class="def">raise</td><td>When a Spectre job still fails after its retries: <code>raise</code> stops the run with the failing job ids; <code>nan</code> marks that subarray's outputs NaN and continues.</td></tr>
+<tr><td><code>spectre_timeout_s</code></td><td class="def">0</td><td>Wall-clock limit per inference Spectre job (s); 0 = none.</td></tr>
+<tr><td><code>pulse_width</code></td><td class="def">1e-9</td><td>Transient PWL drive per input vector (s). trise + tfall must be &lt; pulse_width.</td></tr>
+<tr><td><code>trise</code></td><td class="def">1e-12</td><td>Rise time (s).</td></tr>
+<tr><td><code>tfall</code></td><td class="def">1e-12</td><td>Fall time (s).</td></tr>
+<tr><td><code>settling_window_lo</code></td><td class="def">0.40</td><td>Start of the reduction window, as a fraction of each PWL window.</td></tr>
+<tr><td><code>settling_window_hi</code></td><td class="def">0.65</td><td>End of the window (0 ≤ lo &lt; hi ≤ 1). The loader warns if the window leaves the pulse plateau for the configured pulse/edge times.</td></tr>
+<tr><td><code>settling_reducer</code></td><td class="def">median</td><td><code>median</code> | <code>mean</code> | <code>last</code>.</td></tr>
+<tr><td><code>tran_maxstep</code></td><td class="def">0</td><td>Maximum transient time step (s) appended to the tran analysis; 0 = the simulator's own step control (Spectre X presets ignore it).</td></tr>
+<tr><td><code>hybrid_transient_fraction</code></td><td class="def">0.0</td><td>Hybrid mode: fraction of subarrays also run in transient (0 = pure DC).</td></tr>
+<tr><td><code>hybrid_transient_seed</code></td><td class="def">0</td><td>Seed for the hybrid sample.</td></tr>
+<tr><td><code>dc_input_encoding</code></td><td class="def">sweep</td><td>Validated (<code>sweep</code> | <code>per_image</code>) but currently unused: the DC backend always uses the parametric sweep.</td></tr>
+<tr><td><code>tia_calib_p_lo</code></td><td class="def">0.1</td><td>Low percentile of the per-layer TIA current range.</td></tr>
+<tr><td><code>tia_calib_p_hi</code></td><td class="def">99.9</td><td>High percentile of the per-layer TIA current range.</td></tr>
+<tr><td><code>auto_transient_image</code></td><td class="def">(empty)</td><td>auto: run the transient pass on exactly this file name.</td></tr>
+<tr><td><code>auto_transient_image_index</code></td><td class="def">-1</td><td>auto: ≥ 0 picks that index in the sorted image list (legacy).</td></tr>
+<tr><td><code>auto_transient_num_images</code></td><td class="def">1</td><td>auto: number of distinct random images for the transient pass; crossbar energy is averaged over them.</td></tr>
+<tr><td><code>auto_transient_seed</code></td><td class="def">0</td><td>auto: seed for the random pick.</td></tr>
+<tr><td><code>hwsimdb_retention</code></td><td class="def">all</td><td>Transient raw data kept: <code>all</code> | <code>last_block</code> | <code>none</code>. <i>ref</i> last_block.</td></tr>
+<tr><td><code>fastdc_T_min / T_max / T_step</code></td><td class="def">3.3e-9 / 4.9e-9 / 0.01e-9</td><td>Cell-table T grid (<code>characterize</code>).</td></tr>
+<tr><td><code>fastdc_V_min / V_max / V_step</code></td><td class="def">0.0 / 1.0 / 0.01</td><td>Cell-table V grid. An <code>.npz</code> stores its own grid; for a <code>.csv</code> table it must match the column count (0..1.0 / 0.01 = 101 columns).</td></tr>
+<tr><td><code>array_char_V_min / V_max / V_step</code></td><td class="def">0.0 / 1.0 / 0.01</td><td>Array-table bit-line voltage grid. <i>ref</i> 0.0 / 0.6 / 0.1.</td></tr>
+<tr><td><code>array_char_T_step</code></td><td class="def">0.01e-9</td><td>Array-table T step; the T range is [HW] Tmin..Tmax. <i>ref</i> 0.1e-9.</td></tr>
+<tr><td><code>array_char_size_primary</code></td><td class="def">16</td><td>Primary anchor size (your subarray size).</td></tr>
+<tr><td><code>array_char_size_secondary</code></td><td class="def">32</td><td>Second anchor for cross-size interpolation.</td></tr>
+<tr><td><code>array_char_probe_column</code></td><td class="def">0</td><td>Column probe recorded.</td></tr>
+<tr><td><code>array_char_timeout_s</code></td><td class="def">7200</td><td>Per-call timeout of the array characterisation (s).</td></tr>
+<tr><td><code>cell_char_timeout_s</code></td><td class="def">3600</td><td>Per-call timeout of the cell characterisation (s).</td></tr>
+</tbody></table>
+<h3 id="cfg-paths">[PATHS]</h3>
+<p class="muted">Every relative entry resolves against <code>project_dir</code>; <code>project_dir</code> resolves against the config file's folder. <code>project_dir</code> must also hold the trainer (<code>main.py</code>, <code>utils/</code>).</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>project_dir</code></td><td class="def">.</td><td>Project root, relative to the config file's folder.</td></tr>
+<tr><td><code>images_dir</code></td><td class="def">./Test_Image</td><td>Test images, searched recursively (.jpg .jpeg .png .bmp .tif .tiff). The leaf name is the batch id. <i>ref</i> ./Test_Image/t1.</td></tr>
+<tr><td><code>dump_root</code></td><td class="def">imc_traces</td><td>Reports and per-image dumps, in <code>&lt;dump_root&gt;/&lt;batch&gt;/</code>.</td></tr>
+<tr><td><code>hwsimdb_root</code></td><td class="def">./hwsimdb</td><td>Weight tiles and raw Spectre output.</td></tr>
+<tr><td><code>tmp_root</code></td><td class="def">./tmp</td><td>Per-job scratch and characterisation work dirs.</td></tr>
+<tr><td><code>golden_input_transient</code></td><td class="def">./supports/_golden_input.scs</td><td>Transient testbench template.</td></tr>
+<tr><td><code>golden_input_dc</code></td><td class="def">./supports/_golden_input_dc.scs</td><td>DC testbench template.</td></tr>
+<tr><td><code>stdcell_netlist</code></td><td class="def">./supports/standard_cell.netlist</td><td>Std cells (1T1R cell, BL_DRIVER, decoders, …). <i>ref</i> standard_cell_45nm.netlist, which you create for your PDK from standard_cell.netlist.</td></tr>
+<tr><td><code>device_model_transient</code></td><td class="def">./supports/reram_cell.v</td><td>Transient ReRAM Verilog-A.</td></tr>
+<tr><td><code>device_model_dc</code></td><td class="def">./supports/sky130_dc_memristor_dc.v</td><td>DC ReRAM Verilog-A; also the default for <code>characterize</code>.</td></tr>
+<tr><td><code>transistor_model</code></td><td class="def">(empty)</td><td>Your PDK's Spectre model file. Required for every SPICE run.</td></tr>
+<tr><td><code>char_table_path</code></td><td class="def">./supports/cell_table.npz</td><td>fastdc cell table (.npz written by <code>characterize</code>, or .csv). <i>ref</i> cell_table_45nm.npz.</td></tr>
+<tr><td><code>array_table_path</code></td><td class="def">./supports/array_table.npz</td><td>Array table; auto-built and hash-cached. <i>ref</i> array_table_45nm_tt.npz.</td></tr>
+<tr><td><code>peripheral_netlist</code></td><td class="def">(empty)</td><td>Optional netlist with the H-mode DAC/TIA/SUBTRACTOR/ADC subckts, used only when a converter is H. <i>ref</i> ./supports/peripherals/peripherals_8b.scs.</td></tr>
+</tbody></table>
+<h3 id="cfg-peripherals">[PERIPHERALS]</h3>
+<p class="muted">Readout (TIA/ADC) settings, calibration and energy models. Energy knobs take a measured value when &gt; 0, otherwise a physical model.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generate_energy_report</code></td><td class="def">false</td><td>Write power_energy_latency_report.{json,csv}. <i>ref</i> true.</td></tr>
+<tr><td><code>tech_node_nm</code></td><td class="def">180</td><td>Technology node (accelergy ADC model, scaling). <i>ref</i> 45.</td></tr>
+<tr><td><code>dac_bits</code></td><td class="def">8</td><td>DAC resolution (energy model).</td></tr>
+<tr><td><code>adc_bits</code></td><td class="def">16</td><td>ADC resolution (software ADC). <i>ref</i> 8.</td></tr>
+<tr><td><code>vmin_tia</code></td><td class="def">0.0</td><td>TIA output window, low end (V).</td></tr>
+<tr><td><code>vmax_tia</code></td><td class="def">1.0</td><td>TIA output window, high end (V); each layer's calibrated current range maps onto the window. <i>ref</i> 0.6.</td></tr>
+<tr><td><code>vmax_adc</code></td><td class="def">0.95</td><td><b>ADC full-scale voltage</b> (V): codes span 0..vmax_adc. <i>ref</i> 0.6.</td></tr>
+<tr><td><code>enable_qerror</code></td><td class="def">false</td><td>Add ADC quantisation error.</td></tr>
+<tr><td><code>tia_calib_images</code></td><td class="def">1</td><td>Per-layer TIA/ADC range learned from the first N calls (images; one per batch with --batch_all), then frozen. 0 = never freeze. Calibration and polarity are kept per block <i>and</i> layer (key <code>block_XX/tag</code>).</td></tr>
+<tr><td><code>adc_energy_model</code></td><td class="def">walden</td><td><code>walden</code> (FOMW·2^ENOB) or <code>accelergy</code> (node-aware). <i>ref</i> accelergy.</td></tr>
+<tr><td><code>adc_fom_fJ_per_convstep</code></td><td class="def">22.5</td><td>Walden FOMW (fJ/conv-step).</td></tr>
+<tr><td><code>adc_enob</code></td><td class="def">-1</td><td>ENOB for the ADC energy model; &lt; 0 uses adc_bits.</td></tr>
+<tr><td><code>adc_i_fullscale</code></td><td class="def">8e-4</td><td>± current range (A) of the H-mode TIA→SUB→ADC characterisation sweep.</td></tr>
+<tr><td><code>dac_energy_pJ_per_conv</code></td><td class="def">-1</td><td>Measured DAC pJ/conv (&gt; 0), else the switched-cap model.</td></tr>
+<tr><td><code>dac_cap_fF</code></td><td class="def">500</td><td>DAC capacitance (fF). <i>ref</i> 50.</td></tr>
+<tr><td><code>dac_vref_V</code></td><td class="def">0.2</td><td>DAC reference (V).</td></tr>
+<tr><td><code>dac_switching_activity</code></td><td class="def">0.3333</td><td>Average switching activity.</td></tr>
+<tr><td><code>tia_bias_current_A</code></td><td class="def">20e-6</td><td>TIA static bias (A).</td></tr>
+<tr><td><code>tia_supply_V</code></td><td class="def">1.8</td><td>TIA supply (V). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>tia_active_time_s</code></td><td class="def">-1</td><td>TIA active time; &lt; 0 = one clock period.</td></tr>
+<tr><td><code>mux_energy_pJ_per_op</code></td><td class="def">-1</td><td>Measured mux pJ/op (&gt; 0), else the transmission-gate model. Charged only when num_dac/num_adc &lt; a layer's I/O width.</td></tr>
+<tr><td><code>mux_cap_fF</code></td><td class="def">2.0</td><td>Mux per-stage capacitance (fF).</td></tr>
+<tr><td><code>mux_vdd_V</code></td><td class="def">1.8</td><td>Mux supply (V). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>differential_columns</code></td><td class="def">true</td><td>+col/−col TIAs into a subtractor: 2 TIAs + 1 subtractor per output.</td></tr>
+<tr><td><code>subtractor_energy_pJ_per_op</code></td><td class="def">-1</td><td>Measured subtractor pJ/op (&gt; 0), else the cap model.</td></tr>
+<tr><td><code>subtractor_cap_fF</code></td><td class="def">10.0</td><td>Subtractor capacitance (fF).</td></tr>
+<tr><td><code>subtractor_vdd_V</code></td><td class="def">1.8</td><td>Subtractor supply (V). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>n_bit_slices</code></td><td class="def">1</td><td>Weight bit-slices.</td></tr>
+<tr><td><code>adc_per_slice</code></td><td class="def">false</td><td>Digitise each slice separately.</td></tr>
+<tr><td><code>track_operating_point</code></td><td class="def">false</td><td>Scale modelled peripheral energy with [SIM] vdd. <i>ref</i> true.</td></tr>
+<tr><td><code>nominal_vdd_V</code></td><td class="def">0</td><td>Vnom for that scaling; 0 = per-node table (analog/tech_scale.py). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>energy_node_scaling</code></td><td class="def">false</td><td>Project peripheral constants from energy_ref_node_nm to tech_node_nm.</td></tr>
+<tr><td><code>energy_ref_node_nm</code></td><td class="def">0</td><td>Reference node for that projection.</td></tr>
+</tbody></table>
+<h3 id="cfg-latency">[LATENCY]</h3>
+<p class="muted">Cycle-accurate latency. The total is DAC conversion + VMM settle + ADC conversion cycles at the clock.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>clock_freq_hz</code></td><td class="def">1e9</td><td>Clock (Hz). <i>ref</i> 500e6.</td></tr>
+<tr><td><code>num_dac</code></td><td class="def">16</td><td>Parallel DACs. <i>ref</i> 8.</td></tr>
+<tr><td><code>num_adc</code></td><td class="def">16</td><td>Parallel ADCs. <i>ref</i> 8.</td></tr>
+<tr><td><code>adc_type</code></td><td class="def">sar</td><td><code>sar</code> (bits+1) | <code>flash</code>/<code>pipeline</code> (1) | <code>integrating</code> (2^bits) | <code>sigma_delta</code> (OSR).</td></tr>
+<tr><td><code>adc_cycles_per_conv</code></td><td class="def">0</td><td>Override cycles per conversion (0 = derive).</td></tr>
+<tr><td><code>dac_cycles_per_conv</code></td><td class="def">1</td><td>DAC cycles per conversion.</td></tr>
+<tr><td><code>mac_cycles_per_vector</code></td><td class="def">1</td><td>VMM settle cycles per input vector.</td></tr>
+<tr><td><code>vmm_parallel_subarrays</code></td><td class="def">0</td><td>Subarrays in parallel (0 = pe_rows·pe_cols·tile_rows·tile_cols).</td></tr>
+<tr><td><code>adc_osr</code></td><td class="def">0</td><td>Sigma-delta OSR (0 = 2^adc_bits).</td></tr>
+<tr><td><code>mux_cycles</code></td><td class="def">0</td><td>Extra cycles per muxed wave.</td></tr>
+<tr><td><code>periph_delay_model</code></td><td class="def">fixed</td><td><code>fixed</code> or <code>node_scaled</code>, which scales timing with node, corner and temperature and uses the measured transient settle time. <i>ref</i> node_scaled.</td></tr>
+<tr><td><code>ref_node_nm</code></td><td class="def">0</td><td>Node at which clock_freq_hz holds. <i>ref</i> 45.</td></tr>
+<tr><td><code>node_delay_exponent</code></td><td class="def">1.0</td><td>Delay ∝ (node/ref)^e.</td></tr>
+<tr><td><code>corner_delay_ff</code></td><td class="def">0.85</td><td>ff timing multiplier.</td></tr>
+<tr><td><code>corner_delay_ss</code></td><td class="def">1.30</td><td>ss timing multiplier.</td></tr>
+<tr><td><code>temp_delay_coeff_per_C</code></td><td class="def">0.001</td><td>Delay change per °C.</td></tr>
+<tr><td><code>settle_band</code></td><td class="def">0.02</td><td>Tolerance band for the measured settle.</td></tr>
+</tbody></table>
+<h3 id="cfg-subcircuits">[SUBCIRCUITS]</h3>
+<p class="muted">Role → <code>subckt_name, S|H</code>. S = analytic model; H = a real subckt, SPICE-characterised once and then applied in <b>every</b> mode. Pins and bit widths are parsed from <code>stdcell_netlist</code> and <code>peripheral_netlist</code>. See <a href="#peripherals">Peripherals</a>. <em>In the GUI each role has a name box and an S | H switch.</em></p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>multiplexer</code></td><td class="def">MUX, S</td><td>Energy model only; <code>H</code> is not simulated.</td></tr>
+<tr><td><code>dac</code></td><td class="def">DAC_8b, S</td><td>Input DAC. H: a code sweep gives the measured code → voltage table over [HW] vmin..vmax.</td></tr>
+<tr><td><code>adc</code></td><td class="def">ADC_8b, S</td><td>Output ADC. H: the TIA→SUB→ADC chain is characterised with one current sweep.</td></tr>
+<tr><td><code>tia</code></td><td class="def">TIA_8b, S</td><td>TIA. H takes effect only together with adc = H.</td></tr>
+<tr><td><code>subtractor</code></td><td class="def">SUBTRACTOR_8b, S</td><td>Differential subtractor. H takes effect only together with adc = H.</td></tr>
+<tr><td><code>cell</code></td><td class="def">rram_cell_1T1R_180N_STD, H</td><td>Informational: cells come from [PDK] cell_prefix.</td></tr>
+<tr><td><code>bl_driver</code></td><td class="def">BL_DRIVER, H</td><td>Informational: the std-cell BL_DRIVER is always used.</td></tr>
+</tbody></table>
+<h3 id="cfg-pdk">[PDK]</h3>
+<p class="muted">Process-specific values. To change node or cell library, edit this section plus [PATHS] transistor_model / stdcell_netlist. Both the transient and DC decks use these values. Geometry strings carry units (<code>2u</code>, <code>180n</code>).</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>transistor_model_name</code></td><td class="def">nmos1</td><td>Access-transistor device name. <i>ref</i> g45n1svt.</td></tr>
+<tr><td><code>transistor_w</code></td><td class="def">2u</td><td>Width.</td></tr>
+<tr><td><code>transistor_l</code></td><td class="def">180n</td><td>Length. <i>ref</i> 90n.</td></tr>
+<tr><td><code>transistor_as</code></td><td class="def">1.2p</td><td>Source area. <i>ref</i> 140f.</td></tr>
+<tr><td><code>transistor_ad</code></td><td class="def">1.2p</td><td>Drain area. <i>ref</i> 140f.</td></tr>
+<tr><td><code>transistor_ps</code></td><td class="def">5.2u</td><td>Source perimeter. <i>ref</i> 2.28u.</td></tr>
+<tr><td><code>transistor_pd</code></td><td class="def">5.2u</td><td>Drain perimeter. <i>ref</i> 2.28u.</td></tr>
+<tr><td><code>transistor_m</code></td><td class="def">(1)*(1)</td><td>Multiplicity. <i>ref</i> (1).</td></tr>
+<tr><td><code>wl_read_V</code></td><td class="def">2.4</td><td>Access-transistor gate drive during read and characterisation (V). <i>ref</i> 1.1.</td></tr>
+<tr><td><code>va_cell_transient</code></td><td class="def">sky130_fd_pr_reram__reram_cell</td><td>Verilog-A module name (transient).</td></tr>
+<tr><td><code>va_cell_dc</code></td><td class="def">sky130_dc_memristor_dc</td><td>Verilog-A module name (DC).</td></tr>
+<tr><td><code>cell_prefix</code></td><td class="def">rram_cell_1T1R_180N_STD</td><td>1T1R cell subckt name emitted into the crossbar.</td></tr>
+<tr><td><code>va_area_ox</code></td><td class="def">1.024e-13</td><td>Oxide area (m²).</td></tr>
+<tr><td><code>va_eact_generation</code></td><td class="def">1.501</td><td>Activation energy, generation (eV).</td></tr>
+<tr><td><code>va_eact_recombination</code></td><td class="def">1.5</td><td>Activation energy, recombination (eV).</td></tr>
+<tr><td><code>va_velocity_k1</code></td><td class="def">150</td><td>Filament velocity coefficient.</td></tr>
+<tr><td><code>va_gamma_k0</code></td><td class="def">16.5</td><td>Field-acceleration coefficient k0.</td></tr>
+<tr><td><code>va_gamma_k1</code></td><td class="def">-1.25</td><td>Field-acceleration coefficient k1.</td></tr>
+<tr><td><code>va_temperature_0</code></td><td class="def">300</td><td>Reference temperature (K).</td></tr>
+<tr><td><code>va_c_thermal</code></td><td class="def">3.1825e-16</td><td>Thermal capacitance.</td></tr>
+<tr><td><code>va_tau_thermal</code></td><td class="def">2.3e-10</td><td>Thermal time constant (s).</td></tr>
+<tr><td><code>va_t_step</code></td><td class="def">1e-9</td><td>Verilog-A time step (s).</td></tr>
+<tr><td><code>va_enable_switching</code></td><td class="def">0</td><td><code>0</code> = read mode (filament frozen at the programmed weight); <code>1</code> = full SET/RESET dynamics (cells drift during long reads). Passed to reram_cell.v as <code>enable_switching</code>.</td></tr>
+</tbody></table>
+<h3 id="cfg-parasitics">[PARASITICS]</h3>
+<p class="muted">Crossbar wire R/C. Each line is split into per-cell segments, which reproduces IR drop. <code>enable=false</code> gives an ideal crossbar. The values are part of the array-table hash, so changing them rebuilds the table.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>enable</code></td><td class="def">false</td><td>Master switch.</td></tr>
+<tr><td><code>r_wire_per_cell_ohm</code></td><td class="def">2.5</td><td>Per-segment wire R (Ω).</td></tr>
+<tr><td><code>c_wire_per_cell_fF</code></td><td class="def">0.2</td><td>Per-node C (fF).</td></tr>
+<tr><td><code>model_wl</code></td><td class="def">false</td><td>Also model word-line R.</td></tr>
+<tr><td><code>r_wl_per_cell_ohm</code></td><td class="def">2.5</td><td>Per-cell word-line R (Ω).</td></tr>
+<tr><td><code>driver_at_origin</code></td><td class="def">true</td><td>Driver at the index-0 end of each line.</td></tr>
+</tbody></table>
+<h3 id="cfg-interconnect">[INTERCONNECT]</h3>
+<p class="muted">What the RSN decomposition leaves out: the lines that join a layer's subarrays (loading) and the network-on-chip that joins the tiles. With <code>loading</code>, transient runs every layer as a <i>loaded RSN</i>: pass 1 is the ideal RSN, a line solve predicts the boundary, and pass 2 re-runs every deck with each column ending in its Thévenin equivalent of the shared line. A third pass runs if the residual exceeds the tolerance. fastdc applies the same line solve. Validate with <code>python -m spicecimx.cli.check_loading</code>. The outputs go to interconnect_report.json and the Tile lines / NoC rows of the energy report.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>enable</code></td><td class="def">false</td><td>Master switch. <i>ref</i> true.</td></tr>
+<tr><td><code>loading</code></td><td class="def">true</td><td>Model the shared column lines (and a shared input bus).</td></tr>
+<tr><td><code>input_bus</code></td><td class="def">buffered</td><td><code>buffered</code>: row drivers per subarray, so the DAC bus is capacitive only. <code>shared</code>: one unbuffered pass-gate line carries every subarray's row current.</td></tr>
+<tr><td><code>loading_max_passes</code></td><td class="def">2</td><td>SPICE passes (1 = ideal RSN plus a predicted correction).</td></tr>
+<tr><td><code>loading_tol_V</code></td><td class="def">1e-3</td><td>Boundary residual that ends the passes early (V).</td></tr>
+<tr><td><code>cell_pitch_x_um</code> / <code>cell_pitch_y_um</code></td><td class="def">0 (auto)</td><td>Cell pitch across columns (W + 4F) and rows (8F).</td></tr>
+<tr><td><code>subarray_gap_um</code> / <code>tile_gap_um</code></td><td class="def">5 / 20</td><td>Gap between subarrays; extra gap at PE/tile boundaries.</td></tr>
+<tr><td><code>wire_r_ohm_per_um</code> / <code>wire_c_fF_per_um</code></td><td class="def">0 (auto) / 0.2</td><td>Inter-subarray line R (auto = semi-global metal for the node) and C.</td></tr>
+<tr><td><code>driver_r_out_ohm</code> / <code>bus_tap_c_fF</code></td><td class="def">50 / 2</td><td>DAC/bus-driver output R; input C of each row driver.</td></tr>
+<tr><td><code>tia_r_in_ohm</code> / <code>tia_open_loop_gain</code></td><td class="def">auto / 100</td><td>TIA input R; auto = (vmax_tia − vmin_tia)/adc_i_fullscale/(1+A).</td></tr>
+<tr><td><code>noc</code></td><td class="def">analytic</td><td><code>none</code> | <code>analytic</code> | <code>booksim</code> (analytic + BookSim2 check of the unicast traffic).</td></tr>
+<tr><td><code>noc_multicast</code></td><td class="def">true</td><td>Send the input shared by a block's Q/K/V matmuls once.</td></tr>
+<tr><td><code>noc_flit_bits</code> / <code>noc_packet_flits</code> / <code>noc_clock_hz</code></td><td class="def">64 / 4 / 1e9</td><td>Flit width, packet size, NoC clock.</td></tr>
+<tr><td><code>noc_router_cycles</code> / <code>noc_link_cycles</code></td><td class="def">2 / 1</td><td>Per-hop pipeline.</td></tr>
+<tr><td><code>noc_router_energy_pJ_per_bit</code> / <code>noc_link_energy_pJ_per_bit_mm</code></td><td class="def">-1 (auto)</td><td>Auto: BookSim2/Orion 32 nm router (0.110 pJ/bit) C·V²-scaled; link 0.5·C·V² per mm.</td></tr>
+<tr><td><code>noc_buffer</code> / <code>noc_mesh_cols</code></td><td class="def">center / 0</td><td>Global-buffer position; mesh width (0 = smallest square).</td></tr>
+<tr><td><code>noc_overlap</code></td><td class="def">false</td><td>true = only the NoC pipeline fill adds to latency.</td></tr>
+<tr><td><code>booksim_binary</code></td><td class="def">(empty)</td><td>Patched BookSim2 (SPICECIMX_V3/scripts/booksim/build_booksim.sh).</td></tr>
+</tbody></table>
+<h3 id="cfg-accuracy">[ACCURACY]</h3>
+<p class="muted">Torch-vs-GT, IMC-vs-GT and SW–HW agreement. Only <code>classification</code> is registered.</p>
+<table class="params"><thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generate_accuracy_report</code></td><td class="def">true</td><td>Write accuracy_report.json.</td></tr>
+<tr><td><code>task</code></td><td class="def">classification</td><td>Metric set (extend with core.metrics.register_task).</td></tr>
+<tr><td><code>labels_file</code></td><td class="def">(empty)</td><td>Optional GT: CSV "filename,label" or JSON map (relative to project_dir).</td></tr>
+<tr><td><code>label_from_filename</code></td><td class="def">(empty)</td><td>Regex whose first group captures the label.</td></tr>
+<tr><td><code>topk</code></td><td class="def">1</td><td>Top-k accuracies (comma-separated). <i>ref</i> 1,5.</td></tr>
+</tbody></table>
+</section>
+
+<section id="modes">
+  <h2>Simulation Modes</h2>
+  <table>
+    <thead><tr><th>Mode</th><th>Spectre?</th><th>What it does</th><th>Use it for</th></tr></thead>
+    <tbody>
+      <tr><td><code>transient</code></td><td>yes</td><td>Full transient per (subarray, branch), with a PWL drive per input vector. The settled current is taken over the settling window.</td><td>Energy, power, latency; time-domain effects.</td></tr>
+      <tr><td><code>dc</code></td><td>yes</td><td>One parametric DC sweep per (subarray, branch) covering all input vectors.</td><td>Accuracy with real SPICE currents, faster than transient.</td></tr>
+      <tr><td><code>fastdc</code></td><td>tables only</td><td>NumPy bit-line sums over the SPICE-built cell table, with the array pre-warp.</td><td>Fast accuracy sweeps.</td></tr>
+      <tr><td><code>hybrid</code></td><td>yes</td><td>DC for every subarray, plus transient on a seeded <code>hybrid_transient_fraction</code> sample. Writes <code>hybrid_report.csv</code> per layer.</td><td>DC-vs-transient validation; it does not correct the output.</td></tr>
+      <tr><td><code>auto</code></td><td>yes</td><td>A transient pass on 1..N images (energy/latency), then a fastdc pass on all images (accuracy).</td><td>The full report in one command.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note"><b>Same drive and pre-warp everywhere</b>
+  Every mode drives the crossbar over <code>[HW] vmin..vmax</code> and uses the array-table pre-warp. Without
+  an array table, <code>fastdc</code>/<code>dc</code> fall back to the single-cell table. Crossbar energy comes
+  from SPICE only in transient mode, including the transient pass of auto. The other modes report peripheral
+  energy and latency only.</div>
+  <h3>auto mode image selection</h3>
+  <p>The transient image is chosen by <code>auto_transient_image</code> (a file name), then
+  <code>auto_transient_image_index</code> (≥ 0), then <code>auto_transient_num_images</code> random images
+  seeded by <code>auto_transient_seed</code>. With N &gt; 1 images, the crossbar energy is averaged, and each
+  image's data is kept under <code>timgXX_&lt;name&gt;/</code>.</p>
+</section>
+
+<section id="peripherals">
+  <h2>Peripherals: S | H</h2>
+  <p>An <b>S</b> converter uses the analytic TIA/ADC model and the [PERIPHERALS] energy model. An <b>H</b>
+  converter is characterised once with Spectre at the start of the run, and then its measured transfer and
+  energy are used in <b>every</b> mode:</p>
+  <ul>
+    <li><b>DAC</b>: a code sweep. The measured code → voltage table drives the crossbar inputs, with full scale [HW] vmin..vmax.</li>
+    <li><b>TIA → SUBTRACTOR → ADC</b>: one chained sweep over ±<code>adc_i_fullscale</code>. A per-layer programmable TIA gain maps each layer's calibrated range onto that sweep, and the ADC codes become the output.</li>
+  </ul>
+  <p>The measured energies (<code>measured_converter_energy.json</code>) replace the modelled ones in the energy
+  report. If an H characterisation fails, the run stops; it never falls back silently to S.</p>
+  <h3>Ready-made library</h3>
+  <p><code>supports/peripherals/peripherals_8b.scs</code> defines <code>DAC_8b</code>, <code>TIA_8b</code>,
+  <code>SUBTRACTOR_8b</code> and <code>ADC_8b</code>. They are behavioural, power-annotated Verilog-A cores from
+  the EnPower project, sized for 45 nm / 1.1 V, [HW] vmax = 0.6 V and adc_i_fullscale = 8e-4. Retune their
+  parameters if you change those values.</p>
+  <pre><code><span class="cmt">[PATHS]</span>
+peripheral_netlist = ./supports/peripherals/peripherals_8b.scs
+<span class="cmt">[SUBCIRCUITS]</span>
+dac = DAC_8b, H
+tia = TIA_8b, H
+subtractor = SUBTRACTOR_8b, H
+adc = ADC_8b, H</code></pre>
+  <div class="callout warn"><b>Rules</b>
+  Any subckt with the same pins drops in unchanged: DAC <code>INP&lt;7:0&gt;</code>/<code>OUT</code>; TIA
+  <code>IN</code>/<code>OUT</code>; subtractor <code>INP</code>/<code>INN</code>/<code>OUT</code>; ADC
+  <code>IN</code>/<code>CLK</code>/<code>OUT&lt;7:0&gt;</code>; all also have <code>VDD</code>/<code>VSS</code>.
+  tia/subtractor = H take effect only with adc = H. With adc = H the chain uses the tia and subtractor subckts
+  named in [SUBCIRCUITS], even when those roles are S. multiplexer = H is not simulated. The cell and
+  bl_driver rows are informational. <code>infer</code> prints a NOTE for each setting that has no effect.</div>
+</section>
+
+<section id="outputs">
+  <h2>Output &amp; Reports</h2>
+  <pre><code>&lt;dump_root&gt;/&lt;batch&gt;/
+  Final_report.txt                         <span class="cmt"># per image: name | torch: k (p) | imc: k (p) | match</span>
+  accuracy_report.json                     <span class="cmt"># Torch-vs-GT, IMC-vs-GT, SW–HW agreement, top-k</span>
+  power_energy_latency_report.{json,csv}   <span class="cmt"># per-inference energy breakdown, latency, TOPS/W</span>
+  peripheral_ops.json                      <span class="cmt"># operation manifest (one inference)</span>
+  measured_converter_energy.json           <span class="cmt"># H converters only</span>
+  crossbar_power/block_XX/&lt;tag&gt;_{pwr,eng}.csv  <span class="cmt"># transient crossbar power / energy</span>
+  &lt;image stem&gt;/                            <span class="cmt"># logits / softmax CSVs, per-block dumps</span>
+  batch/                                   <span class="cmt"># per-block dumps with --batch_all</span>
+  timgXX_&lt;name&gt;/                           <span class="cmt"># auto with auto_transient_num_images &gt; 1</span>
+  _char_dac/, _char_readout/               <span class="cmt"># H-converter characterisation</span>
+&lt;hwsimdb_root&gt;/&lt;batch&gt;/&lt;layer&gt;/Tile&lt;T&gt;/PE&lt;P&gt;/Array_&lt;r&gt;_&lt;c&gt;.npy    <span class="cmt"># weight tiles</span>
+                       …/Array_&lt;r&gt;_&lt;c&gt;_{pos,neg}/psf/            <span class="cmt"># raw Spectre output + spectre.out</span>
+&lt;tmp_root&gt;/&lt;batch&gt;/                       <span class="cmt"># per-job scratch decks</span></code></pre>
+  <p><code>&lt;batch&gt;</code> is the leaf folder name of <code>images_dir</code>. The energy report is per
+  inference: peripheral counts are normalised to one image, and with <code>--batch_all</code> the transient
+  crossbar energy is divided by the number of images.</p>
+  <div class="callout tip"><b>Clean slate per batch</b>
+  With <code>[SAVE] clean_workspace = true</code>, a run clears only its own batch folders under hwsimdb_root,
+  dump_root and tmp_root. They are moved to <code>&lt;project_dir&gt;/trash/</code> and deleted in the
+  background. Other batches and the characterisation tables are never touched.</div>
+</section>
+
+<section id="examples">
+  <h2><span class="n">5</span>Example Scenarios</h2>
+
+  <h3>A · An accurate DC run on 100 images</h3>
+  <pre><code><span class="cmd">python</span> -m spicecimx.cli.infer <span class="flag">--config</span> config_cifar10.ini <span class="flag">--mode</span> dc <span class="flag">--images_dir</span> Test_Image/t1_ds <span class="flag">--limit</span> 100</code></pre>
+
+  <h3>B · Energy + accuracy together (auto)</h3>
+  <pre><code><span class="cmt"># [SIM] mode = auto: transient energy on 1..N images, fastdc accuracy on all</span>
+<span class="cmd">python</span> -m spicecimx.cli.infer <span class="flag">--config</span> config_cifar10.ini
+<span class="cmt"># choose the energy image(s):</span>
+<span class="cmt">#   [SIM] auto_transient_image = 0000.jpg     (exact file name in images_dir)</span>
+<span class="cmt">#   [SIM] auto_transient_num_images = 4       (4 random images, averaged)</span></code></pre>
+
+  <h3>C · Change the PDK / technology node</h3>
+  <ol class="steps">
+    <li>Point <code>[PATHS] transistor_model</code> at the new PDK <code>.scs</code> and <code>stdcell_netlist</code> at matching std cells. Set <code>[SIM] process_corner</code>, <code>vdd</code> and <code>vss</code>.</li>
+    <li>In <code>[PDK]</code>, update the transistor geometry, <code>transistor_model_name</code>, <code>wl_read_V</code> and <code>cell_prefix</code>.</li>
+    <li>Adjust <code>[HW] vmin/vmax</code>, the <code>[PERIPHERALS]</code> TIA/ADC windows and supplies, and <code>[PARASITICS]</code> for the node.</li>
+    <li>Run inference. The array-table hash changes, so the table rebuilds at the new process. DC and transient both use the new [PDK] values.</li>
+  </ol>
+
+  <h3>D · Change the ReRAM device model</h3>
+  <p>Update <code>[PATHS] device_model_transient</code> / <code>device_model_dc</code> and the <code>[PDK] va_cell_*</code>
+  names, then the physics in <code>[HW]</code> (<code>Tox/Tref/Ik1/Vref/Tmax/Tmin</code>) and the dynamics in
+  <code>[PDK] va_*</code>. The DC Verilog-A file is part of the array-table hash. A custom transient model should
+  accept an <code>enable_switching</code> parameter, as <code>supports/reram_cell.v</code> does.</p>
+
+  <h3>E · Change the operating point</h3>
+  <pre><code><span class="cmt">[SIM] process_corner = ss</span>
+<span class="cmt">[SIM] temperature = 85.0</span></code></pre>
+  <p>The corner, vdd/vss, temperature and tnom are all hashed, so the array table rebuilds at the new point
+  before inference runs.</p>
+
+  <h3>F · Enable wire parasitics</h3>
+  <pre><code><span class="cmt">[PARASITICS] enable = true</span>
+<span class="cmt">[PARASITICS] r_wire_per_cell_ohm = 2.5</span>
+<span class="cmt">[PARASITICS] c_wire_per_cell_fF  = 0.2</span></code></pre>
+
+  <h3>G · Switch the converters to hardware (SPICE)</h3>
+  <p>Set <code>[PATHS] peripheral_netlist</code> and the dac/tia/subtractor/adc roles to <code>H</code>, as shown
+  in <a href="#peripherals">Peripherals</a>. This works in every mode.</p>
+
+  <h3>H · Switch dataset: CIFAR-10 → Fashion-MNIST</h3>
+  <p>The hardware is unchanged; only the workload changes. Copy <code>config_cifar10.ini</code> to
+  <code>config_fmnist.ini</code> and edit:</p>
+  <table>
+    <thead><tr><th>Key</th><th>CIFAR-10 (ref)</th><th>Fashion-MNIST</th></tr></thead>
+    <tbody>
+      <tr><td><code>[DATA] dataset</code></td><td>cifar10</td><td>fashion_mnist</td></tr>
+      <tr><td><code>[DATA] img_height / img_width</code></td><td>32 / 32</td><td>28 / 28</td></tr>
+      <tr><td><code>[DATA] channels</code></td><td>auto → 3</td><td>auto → 1</td></tr>
+      <tr><td><code>[MODEL] patch_size</code></td><td>4</td><td>4 or 7 (must divide 28)</td></tr>
+      <tr><td><code>[MODEL] num_classes</code></td><td>10</td><td>10</td></tr>
+      <tr><td><code>[SAVE] out_dir</code></td><td>./cifar10/…</td><td>e.g. ./fmnist/outputs</td></tr>
+      <tr><td><code>[PATHS] images_dir</code></td><td>./Test_Image/t1</td><td>your FMNIST test images</td></tr>
+    </tbody>
+  </table>
+  <pre><code><span class="cmd">python</span> main.py <span class="flag">--config</span> config_fmnist.ini                  <span class="cmt"># retrain: channels/patches differ</span>
+<span class="cmd">python</span> -m spicecimx.cli.infer <span class="flag">--config</span> config_fmnist.ini   <span class="cmt"># finds best.pt in [SAVE] out_dir</span></code></pre>
+  <p>The cell and array tables stay valid, because their hash covers only hardware inputs.</p>
+</section>
+
+<section id="trouble">
+  <h2><span class="n">6</span>Troubleshooting &amp; Debugging</h2>
+  <table>
+    <thead><tr><th>Symptom</th><th>Cause &amp; fix</th></tr></thead>
+    <tbody>
+      <tr><td><code>[SIM] mode must be …</code> on load</td>
+        <td>Valid modes: transient / dc / fastdc / hybrid / auto. They are case-insensitive in the config.</td></tr>
+      <tr><td><code>trise + tfall … must be shorter than pulse_width</code>, or a settling-window warning</td>
+        <td>Fix the pulse timing, or keep <code>settling_window_lo/hi</code> inside the pulse plateau.</td></tr>
+      <tr><td>Run stops listing failed Spectre jobs</td>
+        <td><code>on_job_failure = raise</code>. Read <code>…/Array_&lt;r&gt;_&lt;c&gt;_{pos,neg}/psf/spectre.out</code> under hwsimdb. Typical causes are the transistor model, the corner, a cell_prefix/netlist mismatch, or convergence. Use <code>on_job_failure = nan</code> to continue with NaN outputs, and <code>spectre_timeout_s</code> to stop hung jobs.</td></tr>
+      <tr><td>Characterisation aborts or times out</td>
+        <td>A failed Spectre run aborts the build; nothing is cached. Check the output under <code>&lt;tmp_root&gt;/_array_char</code>. Raise <code>array_char_timeout_s</code> / <code>cell_char_timeout_s</code> for big grids.</td></tr>
+      <tr><td><code>CSV has N V_BL columns but the configured grid … implies M</code></td>
+        <td><code>fastdc_V_min/V_max/V_step</code> must describe the CSV columns exactly (e.g. 0..1.0 / 0.01 for 101 columns). An <code>.npz</code> from <code>characterize</code> avoids this.</td></tr>
+      <tr><td><code>--checkpoint … does not exist</code> / <code>No checkpoint found</code></td>
+        <td>Pass an existing file, or put <code>best.pt</code>/<code>last.pt</code> in <code>[SAVE] out_dir</code>.</td></tr>
+      <tr><td><code>checkpoint … does not match the model built from [MODEL]</code></td>
+        <td>Strict loading: [MODEL]/[DATA] must match the training config.</td></tr>
+      <tr><td><code>[clean] refusing to clear …</code></td>
+        <td>hwsimdb_root / dump_root / tmp_root overlap the project, images or supports. Point them at dedicated folders, or set <code>clean_workspace = false</code>.</td></tr>
+      <tr><td>Results depend on image order / later images clip</td>
+        <td>The TIA/ADC range froze after <code>tia_calib_images</code> calls. Raise it, or set 0 to never freeze.</td></tr>
+      <tr><td>A [SUBCIRCUITS] setting seems ignored</td>
+        <td>Read the <code>[hw] NOTE:</code> lines. tia/subtractor = H need adc = H; multiplexer, cell and bl_driver H/S have no simulation effect.</td></tr>
+      <tr><td><code>unknown accuracy task …</code></td>
+        <td>Register the task before <code>infer</code> runs (see §7). Until then the accuracy report is disabled.</td></tr>
+      <tr><td><code>ModuleNotFoundError: tkinter</code></td>
+        <td>Install the OS Tk package (<code>python3-tk</code>).</td></tr>
+    </tbody>
+  </table>
+  <h3>Debugging workflow</h3>
+  <ul>
+    <li>Shrink the problem: <code>cli.run --selftest</code> checks the kernel without Spectre, and <code>--limit 1</code> runs one image.</li>
+    <li>Start in <code>fastdc</code> to separate model and config issues from Spectre issues, then move to <code>dc</code>/<code>transient</code>.</li>
+    <li>Keep intermediates (omit <code>--no_intermediates</code>) and inspect the per-image CSVs under <code>&lt;dump_root&gt;/&lt;batch&gt;/</code>.</li>
+    <li>Keep <code>va_enable_switching = 0</code> for inference. With 1, cells drift during long reads.</li>
+    <li>After a hardware change, look for <code>cache STALE … rebuilding</code>, or force it with <code>characterize_array --force</code>.</li>
+  </ul>
+</section>
+
+<section id="extend">
+  <h2><span class="n">7</span>Extending &amp; Modifying</h2>
+  <h3>Add a new accuracy task</h3>
+  <p>Subclass <code>spicecimx.core.metrics.Task</code>, which needs <code>predict()</code> and <code>is_correct()</code>.
+  Register it before inference runs, then set <code>[ACCURACY] task</code> to its name:</p>
+  <pre><code><span class="cmt"># run_with_task.py</span>
+import numpy as np
+from spicecimx.core.metrics import Task, register_task
+from spicecimx.cli import infer
+
+class MyTask(Task):
+    name = <span class="str">"my_task"</span>
+    def predict(self, output):
+        return np.argmax(np.asarray(output), axis=-1)
+    def is_correct(self, output, gt):
+        return np.asarray(self.predict(output) == np.asarray(gt)).ravel()
+
+register_task(<span class="str">"my_task"</span>, MyTask)
+infer.main([<span class="str">"--config"</span>, <span class="str">"config_cifar10.ini"</span>])</code></pre>
+
+  <h3>Swap the standard-cell or peripheral library</h3>
+  <p>Point <code>[PATHS] stdcell_netlist</code> / <code>peripheral_netlist</code> at the new netlists and name their
+  subckts in <code>[SUBCIRCUITS]</code>. Pin lists and bit widths are parsed from the netlists.</p>
+
+  <h3>Tune the energy models</h3>
+  <p>Each <code>[PERIPHERALS]</code> energy knob takes a measured pJ/op when &gt; 0, otherwise a physical model.
+  For SPICE-measured converter energy, use H converters.</p>
+
+  <h3>Where things live</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Module(s)</th></tr></thead>
+    <tbody>
+      <tr><td>CLI entry points</td><td><code>spicecimx/cli/</code> (infer, gui, characterize, characterize_array, run)</td></tr>
+      <tr><td>Simulator backends</td><td><code>spicecimx/sim/</code> (spectre scheduler, transient, dc, hybrid, fastdc, char runners, templates)</td></tr>
+      <tr><td>Hardware emission</td><td><code>spicecimx/hw/</code> (netlist, device_emit, char/array tables, subckt registry)</td></tr>
+      <tr><td>Core math + metrics</td><td><code>spicecimx/core/</code> (imc_matmul, vit_forward, metrics)</td></tr>
+      <tr><td>Analog models</td><td><code>spicecimx/analog/</code> (tia_adc, peripheral_chain, pwr_energy, tech_scale)</td></tr>
+      <tr><td>I/O + parsing</td><td><code>spicecimx/io/</code> (parse_transient, parse_dc, torch_bridge)</td></tr>
+      <tr><td>Trainer</td><td><code>main.py</code>, <code>utils/</code> (config, data, train, vit_reram)</td></tr>
+      <tr><td>Legacy v2 (comparison only)</td><td><code>utils/</code> reram_imc_infer.py, utils.py, dp.py, dc.py</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="faq">
+  <h2>FAQ &amp; Tips</h2>
+  <h4>Do I need Spectre?</h4>
+  <p>Yes, for every mode and for characterisation. <code>fastdc</code> inference itself only reads tables, but
+  Spectre builds those tables once. <code>cli.run --selftest</code> and <code>pytest</code> run without it.</p>
+  <h4>What is the difference between vmax, vmax_tia and vmax_adc?</h4>
+  <p><code>[HW] vmax</code> is the crossbar drive range. <code>vmin_tia/vmax_tia</code> is the TIA output
+  window that each layer's calibrated current range maps onto. <code>vmax_adc</code> is the ADC full-scale
+  voltage.</p>
+  <h4>Why is the first run slow?</h4>
+  <p>It builds the array table once. Later runs with the same hardware config reuse it.</p>
+  <h4>Can I keep a previous run's files?</h4>
+  <p>Set <code>[SAVE] clean_workspace = false</code>, or use a different <code>images_dir</code> leaf name:
+  cleaning only touches the current batch.</p>
+  <h4>How is the differential readout modelled?</h4>
+  <p><code>[PERIPHERALS] differential_columns = true</code>: a +column and a −column TIA feed a subtractor,
+  then the ADC. With differential currents the affine de-map needs only the J·B offset term, because the
+  baseline terms cancel.</p>
+</section>
+</main>
+</div>
+
+<footer>
+  SPICECiM-X v1.1.0 — SPICE-accurate ViT inference on ReRAM AIMC crossbars. Offline help shipped with the
+  package; reopen it from the GUI's <b>Help / Tutorial</b> button. The full tutorial is <code>SPICECIMX_V3/TUTORIAL.md</code>.
+</footer>
+<script>
+const root=document.documentElement;
+const saved=localStorage?.getItem('scx-theme');
+if(saved) root.setAttribute('data-theme',saved);
+function toggleTheme(){const t=root.getAttribute('data-theme')==='light'?'':'light';
+  if(t)root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');
+  try{localStorage.setItem('scx-theme',t)}catch(e){}
+  document.getElementById('themeLbl').textContent=t==='light'?'Dark':'Light';}
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('themeLbl').textContent=root.getAttribute('data-theme')==='light'?'Dark':'Light';
+  // active TOC via IntersectionObserver
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map={};links.forEach(a=>{const id=a.getAttribute('href').slice(1);if(id)map[id]=a;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[e.target.id];if(a)a.classList.add('active');}});},
+    {rootMargin:'-72px 0px -70% 0px',threshold:0});
+  document.querySelectorAll('main section[id], main h2[id]').forEach(s=>obs.observe(s));
+  // mobile menu
+  const nav=document.querySelector('nav.toc'),scrim=document.querySelector('.scrim');
+  document.querySelector('.menu-btn')?.addEventListener('click',()=>{nav.classList.toggle('open');scrim.classList.toggle('show')});
+  scrim?.addEventListener('click',()=>{nav.classList.remove('open');scrim.classList.remove('show')});
+  nav.addEventListener('click',e=>{if(e.target.tagName==='A'){nav.classList.remove('open');scrim.classList.remove('show')}});
+  // param search
+  const box=document.getElementById('q');
+  box?.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+    document.querySelectorAll('table.params tbody tr').forEach(tr=>{
+      tr.classList.toggle('hidden', q && !tr.textContent.toLowerCase().includes(q));});
+    document.querySelectorAll('#config table.params').forEach(t=>{
+      const any=[...t.querySelectorAll('tbody tr')].some(r=>!r.classList.contains('hidden'));
+      const blk=t.previousElementSibling, h=blk&&blk.previousElementSibling;
+      if(t.tBodies[0]){t.classList.toggle('hidden',!any);}});
+  });
+});
+</script>
+</body>
+</html>

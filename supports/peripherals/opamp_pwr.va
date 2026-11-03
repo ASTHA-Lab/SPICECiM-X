@@ -1,0 +1,57 @@
+// Power-annotated operational amplifier (behavioural, Verilog-A); the core of
+// the TIA and the subtractor.
+// From the EnPower project (S M Mojahidul Ahsan, KU), derived from the opamp.va
+// example of the Cadence AHDL library (OVI Verilog-A LRM 1.0 example).
+// Same behaviour as opamp.va plus a supply branch (vspply_p, vspply_n):
+// i_quiescent + |output stage current|.
+`include "constants.vams"
+`include "disciplines.vams"
+`define PI 3.14159265358979323846264338327950288419716939937511
+module opamp_pwr(vout, vref, vin_p, vin_n, vspply_p, vspply_n);
+    input vref, vspply_p, vspply_n;
+    inout vout, vin_p, vin_n;
+    electrical vout, vref, vin_p, vin_n, vspply_p, vspply_n;
+    parameter real gain = 835e3;
+    parameter real freq_unitygain = 1.0e6;
+    parameter real rin = 1e6;
+    parameter real vin_offset = 0.0;
+    parameter real ibias = 0.0;
+    parameter real iin_max = 100e-6;
+    parameter real slew_rate = 0.5e6;
+    parameter real rout = 80;
+    parameter real vsoft = 0.5;
+    parameter real i_quiescent = 150u from [0:inf);
+    real c1, gm_nom, r1, vmax_in, vin_val, iout;
+    electrical cout;
+
+    analog begin
+        @(initial_step or initial_step("dc")) begin
+            c1 = iin_max / slew_rate;
+            gm_nom = 2 * `PI * freq_unitygain * c1;
+            r1 = gain / gm_nom;
+            vmax_in = iin_max / gm_nom;
+        end
+        vin_val = V(vin_p, vin_n) + vin_offset;
+        I(vin_p, vin_n) <+ (V(vin_p, vin_n) + vin_offset) / rin;
+        I(vref, vin_p) <+ ibias;
+        I(vref, vin_n) <+ ibias;
+        I(vref, cout) <+ V(vref, cout) / 100e6;
+        if (vin_val > vmax_in)
+            I(vref, cout) <+ iin_max;
+        else if (vin_val < -vmax_in)
+            I(vref, cout) <+ -iin_max;
+        else
+            I(vref, cout) <+ gm_nom * vin_val;
+        I(cout, vref) <+ ddt(c1 * V(cout, vref));
+        I(cout, vref) <+ V(cout, vref) / r1;
+        I(vref, vout) <+ V(cout, vref) / rout;
+        I(vout, vref) <+ V(vout, vref) / rout;
+        if (V(vout) > (V(vspply_p) - vsoft))
+            I(cout, vref) <+ gm_nom * (V(vout, vspply_p) + vsoft);
+        else if (V(vout) < (V(vspply_n) + vsoft))
+            I(cout, vref) <+ gm_nom * (V(vout, vspply_n) - vsoft);
+        // supply draw: class-A output stage sources the load current from the rails
+        iout = (V(cout, vref) - V(vout, vref)) / rout;
+        I(vspply_p, vspply_n) <+ i_quiescent + abs(iout);
+    end
+endmodule
